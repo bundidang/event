@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Event Smart Search By Supermink</title>
+  <title>Smart Search</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.minified.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- ใช้ jsDelivr (เสถียรกว่า) และโหลดแบบ defer -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"
+    defer></script>
 
   <style>
     body{font-family:'Prompt','Tahoma','Arial',sans-serif;background:#f0f2f5;display:flex;flex-direction:column;align-items:center;padding:20px;color:#333}
@@ -47,7 +51,6 @@
     <div class="header"><h1>Smart Search</h1></div>
 
     <div class="search-box">
-      <!-- ใช้ URL เดียวกันทั้ง form action และ APPS_SCRIPT_URL -->
       <form id="searchForm" action="https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec" method="POST">
         <div class="search-inputs">
           <div class="input-group">
@@ -69,18 +72,26 @@
           <button type="button" id="btn-reload-cams">รีเฟรชกล้อง</button>
         </div>
         <div id="qr-reader" style="width:100%"></div>
-        <div class="hint">หากค้างที่ “กำลังโหลดกล้อง” ให้ตรวจสิทธิ์กล้องในเบราว์เซอร์ (ต้องเป็น HTTPS และกด “อนุญาต”) โดยเฉพาะ iOS Safari</div>
+        <div class="hint">ถ้าค้างที่ “กำลังโหลดกล้อง” ตรวจสิทธิ์กล้องของเบราว์เซอร์ (ต้องเป็น HTTPS และกด “อนุญาต”)</div>
       </div>
     </div>
 
     <div id="results-container"></div>
   </div>
 
-  <script>
-    // === CONFIG ===
+  <!-- โค้ดหลัก โหลดหลังจากไลบรารี (ใช้ defer) -->
+  <script defer>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec";
 
-    // === DOM ===
+    // ถ้าไลบรารียังไม่มา ให้แจ้งทันที
+    function assertLib(){
+      if (!window.Html5Qrcode) {
+        const m = document.getElementById('status-message');
+        m.innerHTML = 'ไม่สามารถโหลดไลบรารีสแกน QR ได้ (อาจถูกบล็อกจากเครือข่าย/CSP) โปรดลองรีเฟรช หรือเปลี่ยนเครือข่าย';
+        throw new Error('Html5Qrcode library missing');
+      }
+    }
+
     const form = document.getElementById('searchForm');
     const queryInput = document.getElementById('query');
     const resultsContainer = document.getElementById('results-container');
@@ -94,7 +105,6 @@
     let isScanning = false;
     let lastCameraId = null;
 
-    // === SEARCH ===
     function performSearch(queryValue) {
       statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">กำลังค้นหา...</span>';
       resultsContainer.style.display = 'none';
@@ -150,6 +160,9 @@
 
     // === QR SCAN ===
     btnScan.addEventListener('click', async () => {
+      // ตรวจว่ามีไลบรารีจริง
+      try { assertLib(); } catch { return; }
+
       if (isScanning) {
         await stopScannerIfAny();
         qrReaderContainer.style.display = 'none';
@@ -157,7 +170,7 @@
         statusMessage.textContent = '';
         return;
       }
-      // เปิดกล่องกล้อง + โหลดรายการกล้อง
+
       qrReaderContainer.style.display = 'block';
       btnScan.textContent = 'ยกเลิกสแกน';
       statusMessage.innerHTML = '<span class="loading-text">กำลังโหลดกล้อง...</span>';
@@ -165,7 +178,6 @@
       try {
         const cams = await loadCameras();
         populateCameraSelect(cams);
-        // เลือกกล้อง back/environment ถ้ามี
         const preferred = pickBackCamera(cams) || cams[0];
         cameraSelect.value = preferred.id;
         await startScanner(preferred.id);
@@ -208,53 +220,50 @@
       });
     }
 
-    async function loadCameras(force = false) {
-      // บางเบราว์เซอร์ต้องมี user gesture ถึงจะขอสิทธิ์ได้
+    async function loadCameras() {
       const cams = await Html5Qrcode.getCameras({ facingMode: "environment", includeLabels: true });
       if (!cams || cams.length === 0) throw new Error('NotFoundError');
       return cams.map(c => ({ id: c.id || c.deviceId, label: c.label || '', raw: c }));
     }
 
     function pickBackCamera(cameras) {
-      // เลือกตัวที่ label บอกว่า back / rear / environment ก่อน
       return cameras.find(c => /back|rear|environment/i.test(c.label)) || null;
     }
 
     async function startScanner(deviceId) {
       await stopScannerIfAny();
       if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
-      const qrCodeSuccessCallback = async (decodedText) => {
-        try {
-          await stopScannerIfAny();
-        } catch (_) {}
+      const onSuccess = async (decodedText) => {
+        try { await stopScannerIfAny(); } catch {}
         qrReaderContainer.style.display = 'none';
         btnScan.textContent = 'สแกน QR';
         queryInput.value = decodedText;
         performSearch(decodedText);
       };
-      // เริ่มด้วย deviceId ที่เลือก ช่วยลดเคสค้างโหลดบน iOS/Android
-      await html5QrCode.start({ deviceId: { exact: deviceId } }, { fps: 10, qrbox: { width: 250, height: 250 } }, qrCodeSuccessCallback);
+      await html5QrCode.start(
+        { deviceId: { exact: deviceId } },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onSuccess
+      );
       isScanning = true;
       lastCameraId = deviceId;
     }
 
     async function stopScannerIfAny() {
       if (html5QrCode && isScanning) {
-        try {
-          await html5QrCode.stop();
-        } catch (e) {
-          console.warn('Stop scanner error:', e);
-        } finally {
-          isScanning = false;
-        }
+        try { await html5QrCode.stop(); }
+        catch (e) { console.warn('Stop scanner error:', e); }
+        finally { isScanning = false; }
       }
     }
 
     function handleStartError(err) {
       let msg;
       const name = err?.name || err?.message || String(err);
-      if (name.includes('NotAllowedError') || name.includes('PermissionDenied')) {
-        msg = 'เข้าถึงกล้องถูกปฏิเสธ: โปรดตรวจสิทธิ์กล้องของเบราว์เซอร์สำหรับเว็บไซต์นี้ (ต้องเป็น HTTPS และกด “อนุญาต”)';
+      if (name.includes('Html5Qrcode library missing')) {
+        msg = 'ไลบรารีสแกนไม่ถูกโหลด โปรดตรวจเครือข่าย/นโยบายความปลอดภัย (CSP) และรีเฟรชอีกครั้ง';
+      } else if (name.includes('NotAllowedError') || name.includes('PermissionDenied')) {
+        msg = 'เข้าถึงกล้องถูกปฏิเสธ: โปรดอนุญาตการใช้งานกล้องสำหรับเว็บไซต์นี้ (ต้องเป็น HTTPS)';
       } else if (name.includes('NotFoundError')) {
         msg = 'ไม่พบกล้องในอุปกรณ์นี้';
       } else if (name.includes('NotReadableError')) {
@@ -268,20 +277,14 @@
       console.error('Error starting QR scanner:', err);
     }
 
-    // หยุดกล้องเมื่อหน้าไม่โฟกัส ลดโอกาสค้าง
     document.addEventListener('visibilitychange', async () => {
       if (document.hidden) {
         await stopScannerIfAny();
       } else if (qrReaderContainer.style.display === 'block' && lastCameraId) {
-        try {
-          await startScanner(lastCameraId);
-        } catch (e) {
-          console.warn('Restart after visible failed:', e);
-        }
+        try { await startScanner(lastCameraId); } catch (e) { console.warn('Restart failed:', e); }
       }
     });
 
-    // ป้องกันเลื่อนจอระหว่างสแกนบนมือถือ -> ทำให้กล่องคงที่
     window.addEventListener('beforeunload', async () => { await stopScannerIfAny(); });
   </script>
 </body>
