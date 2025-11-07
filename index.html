@@ -51,7 +51,7 @@
 
         .search-inputs {
             display: flex;
-            flex-direction: column; /* เปลี่ยนเป็น column เพื่อให้ปุ่มอยู่ด้านล่างช่องค้นหา */
+            flex-direction: column; 
             gap: 10px;
             margin-bottom: 15px;
             align-items: center;
@@ -64,7 +64,7 @@
             padding: 10px 15px;
             border-radius: 8px;
             border: 1px solid #e0e0e0; 
-            width: 100%; /* ให้เต็มความกว้าง */
+            width: 100%; 
             max-width: 450px; 
         }
 
@@ -90,7 +90,7 @@
             gap: 10px;
             justify-content: center;
             width: 100%;
-            max-width: 450px; /* จำกัดความกว้างปุ่มให้เท่าช่องค้นหา */
+            max-width: 450px; 
         }
 
         .btn-search, .btn-scan {
@@ -284,7 +284,7 @@
         const btnScan = document.getElementById('btn-scan-qr');
         const qrReaderContainer = document.getElementById('qr-reader-container');
         
-        let html5QrCode = null; // ตัวแปรสำหรับเก็บ instance ของเครื่องสแกน
+        let html5QrCode = null; 
 
         // ฟังก์ชันสำหรับค้นหาข้อมูล (เรียกใช้ได้ทั้งจากการพิมพ์และการสแกน)
         function performSearch(queryValue) {
@@ -340,7 +340,6 @@
 
                 } else if (data.status === 'not_found' || data.status === 'error' || items.length === 0) {
                     resultsContainer.style.display = 'none';
-                    // ใช้ innerHTML แทน textContent เพื่อให้ status-message กลับไปใช้สีแดงปกติ
                     statusMessage.innerHTML = data.message || 'ไม่พบข้อมูลตามที่ค้นหา'; 
                 }
             })
@@ -370,11 +369,11 @@
         btnScan.addEventListener('click', function() {
             if (qrReaderContainer.style.display === 'block') {
                 // ถ้ากล้องเปิดอยู่: ให้หยุดการสแกนและซ่อนกล้อง
-                if (html5QrCode) {
+                if (html5QrCode && html5QrCode.isScanning) { 
                     html5QrCode.stop().then(() => {
                         qrReaderContainer.style.display = 'none';
-                        btnScan.textContent = 'สแกน QR'; // เปลี่ยนกลับเป็น "สแกน QR"
-                        statusMessage.textContent = ''; // ล้างสถานะ
+                        btnScan.textContent = 'สแกน QR'; 
+                        statusMessage.textContent = ''; 
                     }).catch(err => {
                         statusMessage.innerHTML = '<span style="color:#dc3545;">เกิดข้อผิดพลาดในการหยุดกล้อง: ' + err + '</span>';
                         console.error("Error stopping QR scanner:", err);
@@ -383,14 +382,14 @@
             } else {
                 // ถ้ากล้องปิดอยู่: ให้เตรียมและเริ่มสแกน
                 qrReaderContainer.style.display = 'block';
-                btnScan.textContent = 'ยกเลิกสแกน'; // เปลี่ยนเป็น "ยกเลิกสแกน"
+                btnScan.textContent = 'ยกเลิกสแกน'; 
                 statusMessage.innerHTML = '<span class="loading-text">กำลังโหลดกล้อง...</span>';
 
                 if (!html5QrCode) {
                     html5QrCode = new Html5Qrcode("qr-reader");
                 }
                 
-                // กำหนดฟังก์ชันที่จะทำงานเมื่อสแกนสำเร็จ
+                // ฟังก์ชันที่จะทำงานเมื่อสแกนสำเร็จ
                 const qrCodeSuccessCallback = (decodedText, decodedResult) => {
                     
                     // 1. หยุดสแกนทันทีที่ได้ผลลัพธ์
@@ -405,32 +404,64 @@
                         performSearch(decodedText);
                         
                     }).catch((err) => {
-                         // การจัดการข้อผิดพลาดในการหยุดสแกน
                         statusMessage.innerHTML = '<span style="color:#dc3545;">สแกนสำเร็จ แต่หยุดกล้องไม่ได้: ' + err + '</span>';
                         console.error("Error stopping QR scanner after success:", err);
                     });
                 };
                 
-                // เริ่มสแกนโดยใช้กล้องหลัง
-                html5QrCode.start(
-                    { facingMode: "environment" }, 
-                    {
-                        fps: 10,    
-                        qrbox: {width: 250, height: 250} 
-                    },
-                    qrCodeSuccessCallback,
-                    (errorMessage) => {
-                        // ไม่ต้องแสดง error message ทุกครั้งที่สแกนไม่สำเร็จ
+                // ฟังก์ชันเพื่อเริ่มสแกนโดยพยายามเลือกกล้องที่ดีที่สุด
+                function startScanning(cameraId) {
+                    html5QrCode.start(
+                        cameraId, 
+                        {
+                            fps: 10,    
+                            qrbox: {width: 250, height: 250} 
+                        },
+                        qrCodeSuccessCallback,
+                        (errorMessage) => {
+                            // (ไม่แสดงข้อผิดพลาด)
+                        }
+                    ).then(() => {
+                        statusMessage.textContent = 'พร้อมสแกน...'; 
+                    })
+                    .catch((err) => {
+                        // การจัดการข้อผิดพลาดในการเริ่มกล้อง 
+                        statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่สามารถเริ่มกล้องได้: โปรดตรวจสอบการอนุญาตของเบราว์เซอร์.</span>';
+                        qrReaderContainer.style.display = 'none';
+                        btnScan.textContent = 'สแกน QR';
+                        console.error("Error starting QR scanner:", err);
+                    });
+                }
+                
+                // 1. พยายามค้นหารายการกล้องทั้งหมดที่มี
+                Html5Qrcode.getCameras().then(devices => {
+                    if (devices && devices.length) {
+                        // 2. ถ้าพบกล้องหลายตัว: พยายามเลือกกล้องหลัง (environment)
+                        let cameraId = devices[0].id; 
+                        
+                        const rearCamera = devices.find(device => 
+                            device.label.toLowerCase().includes('back') || 
+                            device.label.toLowerCase().includes('environment')
+                        );
+
+                        if (rearCamera) {
+                            cameraId = rearCamera.id;
+                        } else {
+                            // ถ้าไม่พบคำว่า back/environment ให้ใช้ FacingMode (เผื่อกรณี Label ไม่ชัดเจน)
+                            cameraId = { facingMode: "environment" };
+                        }
+                        
+                        startScanning(cameraId);
+                        
+                    } else {
+                        // 3. ถ้าไม่พบกล้องเลย
+                        statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่พบกล้องในอุปกรณ์นี้.</span>';
+                        qrReaderContainer.style.display = 'none';
+                        btnScan.textContent = 'สแกน QR';
                     }
-                ).then(() => {
-                    statusMessage.textContent = 'พร้อมสแกน...'; // แจ้งสถานะพร้อม
-                })
-                .catch((err) => {
-                    // การจัดการข้อผิดพลาดในการเริ่มกล้อง (เช่น ผู้ใช้ไม่อนุญาต)
-                    statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่สามารถเริ่มกล้องได้: โปรดตรวจสอบการอนุญาตของเบราว์เซอร์.</span>';
-                    qrReaderContainer.style.display = 'none';
-                    btnScan.textContent = 'สแกน QR';
-                    console.error("Error starting QR scanner:", err);
+                }).catch(err => {
+                    // ข้อผิดพลาดในการเรียกใช้ getCameras (อาจเกิดจากสิทธิ์)
+                    startScanning({ facingMode: "environment" }); // ลองเริ่มด้วย facingMode โดยตรง
                 });
             }
         });
