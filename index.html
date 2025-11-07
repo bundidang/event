@@ -330,8 +330,8 @@
                                 <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position || 'ไม่ระบุ'}</div></div>
                                 <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company || 'ไม่ระบุ'}</div></div>
                                 <div class="data-row"><div class="data-label">เบอร์โทรศัพท์:</div><div class="data-value">${item.mobile || 'ไม่ระบุ'}</div></div>
-                                <div class="data-row"><div class="data-label">อีเมล:</div><div class="data-value">${item.email || 'ไม่ระบุ'}</div></div>
-                                <div class="data-row"><div class="data-label">Code ลงทะเบียน:</div><div class="data-value">${item.code || 'ไม่ระบุ'}</div></div>
+                                <div class=\"data-row\"><div class=\"data-label\">อีเมล:</div><div class=\"data-value\">${item.email || 'ไม่ระบุ'}</div></div>
+                                <div class=\"data-row\"><div class=\"data-label\">Code ลงทะเบียน:</div><div class=\"data-value\">${item.code || 'ไม่ระบุ'}</div></div>
                             </div>
                         `;
                         
@@ -409,59 +409,26 @@
                     });
                 };
                 
-                // ฟังก์ชันเพื่อเริ่มสแกนโดยพยายามเลือกกล้องที่ดีที่สุด
-                function startScanning(cameraId) {
-                    html5QrCode.start(
-                        cameraId, 
-                        {
-                            fps: 10,    
-                            qrbox: {width: 250, height: 250} 
-                        },
-                        qrCodeSuccessCallback,
-                        (errorMessage) => {
-                            // (ไม่แสดงข้อผิดพลาด)
-                        }
-                    ).then(() => {
-                        statusMessage.textContent = 'พร้อมสแกน...'; 
-                    })
-                    .catch((err) => {
-                        // การจัดการข้อผิดพลาดในการเริ่มกล้อง 
-                        statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่สามารถเริ่มกล้องได้: โปรดตรวจสอบการอนุญาตของเบราว์เซอร์.</span>';
-                        qrReaderContainer.style.display = 'none';
-                        btnScan.textContent = 'สแกน QR';
-                        console.error("Error starting QR scanner:", err);
-                    });
-                }
-                
-                // 1. พยายามค้นหารายการกล้องทั้งหมดที่มี
-                Html5Qrcode.getCameras().then(devices => {
-                    if (devices && devices.length) {
-                        // 2. ถ้าพบกล้องหลายตัว: พยายามเลือกกล้องหลัง (environment)
-                        let cameraId = devices[0].id; 
-                        
-                        const rearCamera = devices.find(device => 
-                            device.label.toLowerCase().includes('back') || 
-                            device.label.toLowerCase().includes('environment')
-                        );
-
-                        if (rearCamera) {
-                            cameraId = rearCamera.id;
-                        } else {
-                            // ถ้าไม่พบคำว่า back/environment ให้ใช้ FacingMode (เผื่อกรณี Label ไม่ชัดเจน)
-                            cameraId = { facingMode: "environment" };
-                        }
-                        
-                        startScanning(cameraId);
-                        
-                    } else {
-                        // 3. ถ้าไม่พบกล้องเลย
-                        statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่พบกล้องในอุปกรณ์นี้.</span>';
-                        qrReaderContainer.style.display = 'none';
-                        btnScan.textContent = 'สแกน QR';
+                // 🚨 เริ่มสแกนโดยใช้ FacingMode โดยตรง 
+                html5QrCode.start(
+                    { facingMode: "environment" }, // ใช้งานกล้องหลังโดยตรง
+                    {
+                        fps: 10,    
+                        qrbox: {width: 250, height: 250} 
+                    },
+                    qrCodeSuccessCallback,
+                    (errorMessage) => {
+                        // (ไม่แสดงข้อผิดพลาด)
                     }
-                }).catch(err => {
-                    // ข้อผิดพลาดในการเรียกใช้ getCameras (อาจเกิดจากสิทธิ์)
-                    startScanning({ facingMode: "environment" }); // ลองเริ่มด้วย facingMode โดยตรง
+                ).then(() => {
+                    statusMessage.textContent = 'พร้อมสแกน...'; 
+                })
+                .catch((err) => {
+                    // การจัดการข้อผิดพลาดในการเริ่มกล้อง (เช่น ผู้ใช้ไม่อนุญาต)
+                    statusMessage.innerHTML = '<span style="color:#dc3545;">ไม่สามารถเริ่มกล้องได้: โปรดตรวจสอบการอนุญาตของเบราว์เซอร์หรือลองรีเฟรชหน้า.</span>';
+                    qrReaderContainer.style.display = 'none';
+                    btnScan.textContent = 'สแกน QR';
+                    console.error("Error starting QR scanner:", err);
                 });
             }
         });
