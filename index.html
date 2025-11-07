@@ -31,6 +31,8 @@
     .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px}
     .data-label{width:180px;color:#555}
     .data-value{font-weight:bold;color:#333;flex-grow:1}
+    .status-checked-in{color:#4CAF50;font-weight:bold;}
+    .status-pending{color:#ff7f00;font-weight:bold;}
     #status-message{margin-top:20px;font-size:15px;font-weight:600;color:#6b7280}
     .spinner{border:4px solid #f3f3f3;border-top:4px solid #ff7f00;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
@@ -41,6 +43,7 @@
     .hint{font-size:12px;color:#777;margin-top:6px}
   </style>
 
+  <!-- ตัวโหลดไลบรารี HTML5-QRCode สำหรับการสแกน QR Code -->
   <script>
     (function loadHtml5QrcodeWithFallback(){
       const cdns = [
@@ -50,7 +53,7 @@
       ];
       let i = 0;
       function tryNext(){
-        if(i >= cdns.length){ alert("ไม่สามารถโหลดไลบรารีสแกน QR ได้จากทุกแหล่ง"); return; }
+        if(i >= cdns.length){ console.error("ไม่สามารถโหลดไลบรารีสแกน QR ได้จากทุกแหล่ง"); return; }
         const s = document.createElement("script");
         s.src = cdns[i++];
         s.async = false;
@@ -68,7 +71,9 @@
     <div class="header"><h1>Smart Search & Check-In</h1></div>
 
     <div class="search-box">
-      <form id="searchForm" action="https://script.google.com/macros/s/AKfycbyf3NQFtglM5ZZz_x_HNHggKzVt3VD-IffoBFbgOf0oqTtQfPUsCGMOcdrSePBPheTm/exec" method="POST">
+      <!-- **ATTENTION:** Please replace this URL with your deployed Google Apps Script URL. -->
+      <!-- The previous file used: https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec -->
+      <form id="searchForm">
         <div class="search-inputs">
           <div class="input-group">
             <label for="query">ค้นหา:</label>
@@ -98,15 +103,15 @@
 
   <script>
     // === CONFIG ===
-    // **UPDATED APPS SCRIPT URL**
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8UC1vSbzLj2G5TpyVf7pwTLd9gZBGePE-rccg7TkAcYhhicZErJxk8ArY9ZPeNhGs/exec";
+    // **โปรดเปลี่ยน URL นี้เป็น URL ของ Google Apps Script ที่ Deploy แล้วของคุณ**
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec"; 
 
     // ฟังก์ชันหลัก จะถูกเรียกเมื่อไลบรารีโหลดสำเร็จ
     function init(){
       // guard กล้องบน HTTPS/localhost เท่านั้น
       const isSecure = location.protocol === "https:" || location.hostname === "localhost";
       if(!isSecure){
-        alert("การสแกนกล้องต้องเปิดผ่าน HTTPS หรือ localhost เท่านั้น");
+        console.warn("การสแกนกล้องควรเปิดผ่าน HTTPS หรือ localhost เท่านั้น");
       }
 
       const form = document.getElementById('searchForm');
@@ -122,42 +127,58 @@
       let isScanning = false;
       let lastCameraId = null;
 
-      // === NEW FUNCTION: CHECK-IN ===
+      // === Check-In Function ===
       function checkIn(memberCode, memberName){
         statusMessage.innerHTML = `<span class="spinner"></span><span class="loading-text">กำลังบันทึกการ Check-In ของ ${memberName}...</span>`;
 
         const formData = new FormData();
-        formData.append('action', 'checkin'); // New action for Apps Script
-        formData.append('code', memberCode); // Key for the member to update
-
-        fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
-          .then(r=>r.json())
-          .then(data=>{
-            if (data.status === 'success'){
-              alert(`Check-In สำเร็จ!\nชื่อ: ${memberName}\nเวลา: ${data.timestamp}`);
-            } else {
-              alert(`Check-In ล้มเหลว: ${data.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ'}`);
-            }
-          })
-          .catch(err=>{
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อ Check-In (โปรดตรวจสอบ Network)');
-            console.error(err);
-          })
-          .finally(()=>{
-            statusMessage.textContent = '';
-          });
+        formData.append('action', 'checkin'); // Action สำหรับ Apps Script
+        formData.append('code', memberCode); // Code สมาชิก
+        
+        // ใช้ setTimeout เพื่อหลีกเลี่ยงการถูกบล็อก
+        setTimeout(() => {
+          fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
+            .then(r => r.json())
+            .then(data => {
+              if (data.status === 'success'){
+                // ใช้ Modal/Alert เพื่อแจ้งสถานะ
+                alert(`Check-In สำเร็จ!\nชื่อ: ${memberName}\nเวลา: ${data.timestamp}\n\nสถานะ: ${data.message}`);
+                // ค้นหาข้อมูลเดิมอีกครั้งเพื่ออัปเดตสถานะในหน้าจอ
+                performSearch(queryInput.value); 
+              } else {
+                // แสดงข้อความผิดพลาดจาก Apps Script
+                alert(`Check-In ล้มเหลว: ${data.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ'}`);
+              }
+            })
+            .catch(err => {
+              alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อ Check-In (โปรดตรวจสอบ Network)');
+              console.error('Check-In Fetch Error:', err);
+            })
+            .finally(() => {
+              // ล้างสถานะการโหลด
+              statusMessage.textContent = '';
+            });
+        }, 100);
       }
 
-      function renderResults(items){
+      // === Render and Confirmation Logic ===
+      function renderResults(items, queryValue){
         resultsContainer.style.display = 'block';
         resultsContainer.innerHTML = '';
-
+        
+        let firstUncheckedItem = null; // เก็บรายการแรกที่ยังไม่ได้ Check-In
+        
         items.forEach((item, idx)=>{
+          // กำหนด class ตามสถานะ
+          const statusClass = item.status && item.status.toLowerCase().includes('check in') ? 'status-checked-in' : 'status-pending';
+          const statusText = item.status || 'Pending';
+          
           const box = document.createElement('div');
           box.className = 'result-box';
           box.innerHTML = `
             <div class="result-title"><span>${idx+1}</span> ข้อมูลสมาชิก</div>
             <div class="data-list">
+              <div class="data-row"><div class="data-label">สถานะ:</div><div class="data-value ${statusClass}">${statusText}</div></div>
               <div class="data-row"><div class="data-label">ชื่อ:</div><div class="data-value">${item.name||'ไม่ระบุ'}</div></div>
               <div class="data-row"><div class="data-label">นามสกุล:</div><div class="data-value">${item.surname||'ไม่ระบุ'}</div></div>
               <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position||'ไม่ระบุ'}</div></div>
@@ -167,18 +188,28 @@
               <div class="data-row"><div class="data-label">Code ลงทะเบียน:</div><div class="data-value">${item.code||'ไม่ระบุ'}</div></div>
             </div>`;
           resultsContainer.appendChild(box);
-
-          // **POPUP CHECK-IN CONFIRMATION**
-          if(item.code && idx === 0){ // Only ask for the first result
-            const memberName = `${item.name||''} ${item.surname||''}`.trim();
-            const confirmCheckIn = confirm(`พบข้อมูล: ${memberName}\n\nต้องการ Check-In หรือไม่?`);
-            if(confirmCheckIn){
-              checkIn(item.code, memberName);
-            }
+          
+          // ตรวจสอบรายการแรกที่ยังไม่ Check In สำหรับ Popup
+          if (idx === 0 && item.code && !statusText.toLowerCase().includes('check in')) {
+              firstUncheckedItem = item;
           }
         });
+        
+        // **POPUP CHECK-IN CONFIRMATION (ตามคำขอ)**
+        if(firstUncheckedItem){ 
+          const memberName = `${firstUncheckedItem.name||''} ${firstUncheckedItem.surname||''}`.trim() || 'สมาชิกท่านนี้';
+          
+          // ใช้ confirm() เพื่อถามผู้ใช้
+          const confirmCheckIn = confirm(`พบข้อมูล: ${memberName}\n\nต้องการ Check-In ใช่หรือไม่?`);
+          
+          if(confirmCheckIn){
+            // เรียกฟังก์ชัน Check-In หากผู้ใช้เลือก 'ใช่'
+            checkIn(firstUncheckedItem.code, memberName);
+          }
+        }
       }
 
+      // === Search Function ===
       function performSearch(queryValue){
         statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">กำลังค้นหา...</span>';
         resultsContainer.style.display = 'none';
@@ -186,36 +217,37 @@
 
         const formData = new FormData();
         formData.append('query', queryValue);
-        formData.append('action', 'search'); // Explicit search action
+        formData.append('action', 'search'); // ระบุ action
 
         fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
           .then(r=>r.json())
           .then(data=>{
             statusMessage.textContent = '';
-            let items;
-            if (data.data && Array.isArray(data.data)) items = data.data;
-            else if (data.status === 'success' && data.name) items = [data];
-            else items = [];
+            let items = data.data && Array.isArray(data.data) ? data.data : [];
 
             if (items.length > 0){
-              renderResults(items);
+              renderResults(items, queryValue);
             } else {
               alert(data.message || 'ไม่พบข้อมูลตามที่ค้นหา');
             }
           })
           .catch(err=>{
             alert('เกิดข้อผิดพลาดในการเชื่อมต่อ (โปรดตรวจสอบ URL และ Network)');
-            console.error(err);
+            console.error('Search Fetch Error:', err);
+            statusMessage.textContent = '';
           });
       }
 
       form.addEventListener('submit', async (e)=>{
         e.preventDefault();
+        const queryValue = queryInput.value.trim();
+        if(!queryValue) return;
+
         await stopScannerIfAny();
-        performSearch(queryInput.value);
+        performSearch(queryValue);
       });
 
-      // === QR SCAN ===
+      // === QR SCAN Logic (เหมือนเดิม) ===
       btnScan.addEventListener('click', async ()=>{
         if (isScanning){
           await stopScannerIfAny();
@@ -235,7 +267,7 @@
           const preferred = pickBackCamera(cams) || cams[0];
           cameraSelect.value = preferred.id;
           await startScanner(preferred.id);
-          statusMessage.textContent = ''; // ไม่โชว์ข้อความเพิ่มเติม
+          statusMessage.textContent = '';
         }catch(err){
           alert(normalizeCamError(err));
           await stopScannerIfAny();
