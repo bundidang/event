@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Search</title>
+  <title>Smart Search & Check-In</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,7 +41,6 @@
     .hint{font-size:12px;color:#777;margin-top:6px}
   </style>
 
-  <!-- ตัวโหลดไลบรารีพร้อม fallback 3 แหล่ง -->
   <script>
     (function loadHtml5QrcodeWithFallback(){
       const cdns = [
@@ -66,10 +65,10 @@
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>Smart Search</h1></div>
+    <div class="header"><h1>Smart Search & Check-In</h1></div>
 
     <div class="search-box">
-      <form id="searchForm" action="https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec" method="POST">
+      <form id="searchForm" action="https://script.google.com/macros/s/AKfycbyf3NQFtglM5ZZz_x_HNHggKzVt3VD-IffoBFbgOf0oqTtQfPUsCGMOcdrSePBPheTm/exec" method="POST">
         <div class="search-inputs">
           <div class="input-group">
             <label for="query">ค้นหา:</label>
@@ -99,7 +98,8 @@
 
   <script>
     // === CONFIG ===
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw49pZZBFFXLNn43BfRDPEkMlY6vwQKFjygwTK5jLpXKPh12ATntltgbtJeW7jOnopm/exec";
+    // **UPDATED APPS SCRIPT URL**
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8UC1vSbzLj2G5TpyVf7pwTLd9gZBGePE-rccg7TkAcYhhicZErJxk8ArY9ZPeNhGs/exec";
 
     // ฟังก์ชันหลัก จะถูกเรียกเมื่อไลบรารีโหลดสำเร็จ
     function init(){
@@ -122,6 +122,63 @@
       let isScanning = false;
       let lastCameraId = null;
 
+      // === NEW FUNCTION: CHECK-IN ===
+      function checkIn(memberCode, memberName){
+        statusMessage.innerHTML = `<span class="spinner"></span><span class="loading-text">กำลังบันทึกการ Check-In ของ ${memberName}...</span>`;
+
+        const formData = new FormData();
+        formData.append('action', 'checkin'); // New action for Apps Script
+        formData.append('code', memberCode); // Key for the member to update
+
+        fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
+          .then(r=>r.json())
+          .then(data=>{
+            if (data.status === 'success'){
+              alert(`Check-In สำเร็จ!\nชื่อ: ${memberName}\nเวลา: ${data.timestamp}`);
+            } else {
+              alert(`Check-In ล้มเหลว: ${data.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ'}`);
+            }
+          })
+          .catch(err=>{
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อ Check-In (โปรดตรวจสอบ Network)');
+            console.error(err);
+          })
+          .finally(()=>{
+            statusMessage.textContent = '';
+          });
+      }
+
+      function renderResults(items){
+        resultsContainer.style.display = 'block';
+        resultsContainer.innerHTML = '';
+
+        items.forEach((item, idx)=>{
+          const box = document.createElement('div');
+          box.className = 'result-box';
+          box.innerHTML = `
+            <div class="result-title"><span>${idx+1}</span> ข้อมูลสมาชิก</div>
+            <div class="data-list">
+              <div class="data-row"><div class="data-label">ชื่อ:</div><div class="data-value">${item.name||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">นามสกุล:</div><div class="data-value">${item.surname||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">เบอร์โทรศัพท์:</div><div class="data-value">${item.mobile||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">อีเมล:</div><div class="data-value">${item.email||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">Code ลงทะเบียน:</div><div class="data-value">${item.code||'ไม่ระบุ'}</div></div>
+            </div>`;
+          resultsContainer.appendChild(box);
+
+          // **POPUP CHECK-IN CONFIRMATION**
+          if(item.code && idx === 0){ // Only ask for the first result
+            const memberName = `${item.name||''} ${item.surname||''}`.trim();
+            const confirmCheckIn = confirm(`พบข้อมูล: ${memberName}\n\nต้องการ Check-In หรือไม่?`);
+            if(confirmCheckIn){
+              checkIn(item.code, memberName);
+            }
+          }
+        });
+      }
+
       function performSearch(queryValue){
         statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">กำลังค้นหา...</span>';
         resultsContainer.style.display = 'none';
@@ -129,6 +186,7 @@
 
         const formData = new FormData();
         formData.append('query', queryValue);
+        formData.append('action', 'search'); // Explicit search action
 
         fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
           .then(r=>r.json())
@@ -140,23 +198,7 @@
             else items = [];
 
             if (items.length > 0){
-              resultsContainer.style.display = 'block';
-              items.forEach((item, idx)=>{
-                const box = document.createElement('div');
-                box.className = 'result-box';
-                box.innerHTML = `
-                  <div class="result-title"><span>${idx+1}</span> ข้อมูลสมาชิก</div>
-                  <div class="data-list">
-                    <div class="data-row"><div class="data-label">ชื่อ:</div><div class="data-value">${item.name||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">นามสกุล:</div><div class="data-value">${item.surname||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">เบอร์โทรศัพท์:</div><div class="data-value">${item.mobile||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">อีเมล:</div><div class="data-value">${item.email||'ไม่ระบุ'}</div></div>
-                    <div class="data-row"><div class="data-label">Code ลงทะเบียน:</div><div class="data-value">${item.code||'ไม่ระบุ'}</div></div>
-                  </div>`;
-                resultsContainer.appendChild(box);
-              });
+              renderResults(items);
             } else {
               alert(data.message || 'ไม่พบข้อมูลตามที่ค้นหา');
             }
@@ -205,7 +247,7 @@
 
       btnReloadCams.addEventListener('click', async ()=>{
         try{
-          const cams = await loadCameras(true);
+          const cams = await loadCameras();
           populateCameraSelect(cams);
         }catch(err){
           alert('รีเฟรชกล้องไม่สำเร็จ: ' + (err?.message||err));
