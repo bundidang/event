@@ -12,15 +12,15 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
     
     <style>
-        /* CSS หลักสำหรับการจัดหน้าและสี (โทนสีเทาอ่อน/ขาว) */
+        /* CSS หลักสำหรับการจัดหน้าและสี */
         body {
             font-family: 'Prompt', 'Tahoma', 'Arial', sans-serif; 
-            background-color: #f0f2f5; /* พื้นหลังเทาอ่อนมาก */
+            background-color: #f0f2f5; 
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            color: #333333; /* ข้อความหลักสีดำอมเทา */
+            color: #333333; 
         }
 
         .container {
@@ -35,21 +35,15 @@
         }
 
         .header h1 {
-            color: #1a1a1a; /* หัวข้อสีดำเข้ม */
+            color: #1a1a1a; 
             font-size: 28px;
             margin-bottom: 5px;
         }
 
-        .header p {
-            color: #555555; /* คำอธิบายสีเทาเข้ม */
-            font-size: 16px;
-        }
-
         .search-box {
-            background-color: #ffffff; /* กล่องค้นหาสีขาวสะอาด */
+            background-color: #ffffff; 
             padding: 30px;
             border-radius: 12px;
-            /* เงาที่ละเอียดอ่อนและทันสมัย */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
             margin-bottom: 40px;
             text-align: center;
@@ -57,10 +51,10 @@
 
         .search-inputs {
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* เปลี่ยนเป็น column เพื่อให้ปุ่มอยู่ด้านล่างช่องค้นหา */
             gap: 10px;
             margin-bottom: 15px;
-            flex-wrap: wrap; 
+            align-items: center;
         }
 
         .input-group {
@@ -69,14 +63,13 @@
             background-color: #ffffff; 
             padding: 10px 15px;
             border-radius: 8px;
-            /* เพิ่มเส้นขอบบางๆ ให้ช่องกรอกข้อมูล */
             border: 1px solid #e0e0e0; 
+            width: 100%; /* ให้เต็มความกว้าง */
             max-width: 450px; 
-            flex-grow: 1;
         }
 
         .input-group label {
-            color: #ff7f00; /* สีเน้น: สีส้มสมัยใหม่ */
+            color: #ff7f00; /* สีเน้น: สีส้ม */
             font-weight: bold;
             margin-right: 10px;
         }
@@ -88,7 +81,7 @@
             font-size: 16px;
             padding: 5px 0; 
             background-color: transparent; 
-            color: #333333; /* ข้อความที่พิมพ์สีดำ */
+            color: #333333; 
         }
         
         /* สไตล์สำหรับปุ่มสแกนและปุ่มค้นหาให้อยู่ในแถวเดียวกัน */
@@ -96,73 +89,73 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+            width: 100%;
+            max-width: 450px; /* จำกัดความกว้างปุ่มให้เท่าช่องค้นหา */
         }
 
         .btn-search, .btn-scan {
             color: white;
-            padding: 15px 25px; /* ปรับ Padding ให้ขนาดใกล้เคียงกัน */
+            padding: 15px 25px; 
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s;
-            flex-grow: 1; /* ให้ปุ่มขยายออกไป */
-            max-width: 150px; /* จำกัดความกว้างปุ่ม */
+            flex-grow: 1; 
         }
         
+        /* ปุ่มค้นหาสีส้ม */
         .btn-search {
-            background-color: #ff7f00; /* ปุ่มสีส้มหลัก */
+            background-color: #ff7f00; 
         }
 
         .btn-search:hover {
-            background-color: #cc6600; /* สีส้มเข้มขึ้นเมื่อโฮเวอร์ */
+            background-color: #cc6600; 
         }
         
+        /* ปุ่มสแกนสีเขียว */
         .btn-scan {
-            background-color: #4CAF50; /* สีเขียวสำหรับสแกน */
+            background-color: #4CAF50; 
         }
         
         .btn-scan:hover {
-            background-color: #45a049; /* สีเขียวเข้มขึ้นเมื่อโฮเวอร์ */
+            background-color: #45a049; 
         }
 
         .search-info {
-            color: #999999; /* ข้อความช่วยเหลือสีเทา */
+            color: #999999; 
             font-size: 14px;
             margin-top: 10px;
         }
         
-        /* === สไตล์สำหรับผลลัพธ์หลายรายการและเลื่อนได้ === */
-        
+        /* === สไตล์สำหรับผลลัพธ์ === */
         #results-container {
-            max-height: 400px;
-            overflow-y: auto;
+            max-height: 400px; 
+            overflow-y: auto; 
             padding: 10px;
-            border: 1px solid #cccccc40;
+            border: 1px solid #cccccc40; 
             border-radius: 8px;
             margin-top: 20px;
-            display: none;
+            display: none; 
         }
         
         .result-box {
-            background-color: #ffffff;
+            background-color: #ffffff; 
             padding: 20px 30px;
             border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             text-align: left;
-            margin-bottom: 15px;
+            margin-bottom: 15px; 
         }
         
-        /* === สไตล์รายละเอียดข้อมูลในกล่อง === */
-
         .result-title {
             display: flex;
             align-items: center;
             font-size: 20px;
             font-weight: bold;
-            color: #1a1a1a;
-            border-bottom: 2px solid #e0e0e0;
+            color: #1a1a1a; 
+            border-bottom: 2px solid #e0e0e0; 
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
@@ -183,38 +176,38 @@
         .data-row {
             display: flex;
             padding: 8px 0;
-            border-bottom: 1px dashed #e9ecef;
+            border-bottom: 1px dashed #e9ecef; 
             font-size: 15px;
         }
 
         .data-label {
             width: 180px; 
-            color: #555555;
+            color: #555555; 
         }
 
         .data-value {
             font-weight: bold;
-            color: #333333;
+            color: #333333; 
             flex-grow: 1;
         }
         
-        /* === สไตล์สำหรับข้อความสถานะการค้นหาและ Loading === */
+        /* === สไตล์สำหรับข้อความสถานะการค้นหาและ Loading (สีส้ม) === */
         #status-message {
             margin-top: 20px;
             font-size: 16px;
             font-weight: bold;
-            color: #dc3545; 
+            color: #dc3545; /* สีแดงสำหรับข้อผิดพลาด/ไม่พบข้อมูล */
         }
 
         /* สไตล์สำหรับ Loading Spinner (สร้างวงกลมหมุน) */
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #ff7f00;
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid #ff7f00; /* สีส้มสำหรับส่วนที่หมุน */
             border-radius: 50%;
             width: 18px;
             height: 18px;
             animation: spin 1s linear infinite;
-            display: inline-block;
+            display: inline-block; 
             margin-right: 8px;
             vertical-align: middle;
         }
@@ -225,20 +218,23 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* สไตล์สำหรับข้อความที่กำลังโหลด */
+        /* สไตล์สำหรับข้อความที่กำลังโหลดเป็นสีส้ม */
         .loading-text {
-            color: #ff7f00; /* เปลี่ยนสีข้อความ loading เป็นสีส้ม */
+            color: #ff7f00; 
         }
         
         /* === สไตล์สำหรับกล่องสแกน QR Code === */
         #qr-reader-container {
             width: 100%;
+            max-width: 450px;
             /* ซ่อนกล้องตอนเริ่มต้น */
             display: none; 
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
@@ -267,7 +263,7 @@
             <div id="status-message"></div>
             
             <div id="qr-reader-container">
-                <div id="qr-reader" style="width:100%"></div>
+                <div id="qr-reader" style="width:100%"></div> 
             </div>
             
         </div>
@@ -290,7 +286,7 @@
         
         let html5QrCode = null; // ตัวแปรสำหรับเก็บ instance ของเครื่องสแกน
 
-        // ฟังก์ชันสำหรับค้นหาข้อมูล
+        // ฟังก์ชันสำหรับค้นหาข้อมูล (เรียกใช้ได้ทั้งจากการพิมพ์และการสแกน)
         function performSearch(queryValue) {
             statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">กำลังค้นหา...</span>';
             resultsContainer.style.display = 'none';
@@ -344,7 +340,8 @@
 
                 } else if (data.status === 'not_found' || data.status === 'error' || items.length === 0) {
                     resultsContainer.style.display = 'none';
-                    statusMessage.innerHTML = data.message || 'ไม่พบข้อมูลตามที่ค้นหา';
+                    // ใช้ innerHTML แทน textContent เพื่อให้ status-message กลับไปใช้สีแดงปกติ
+                    statusMessage.innerHTML = data.message || 'ไม่พบข้อมูลตามที่ค้นหา'; 
                 }
             })
             .catch(error => {
@@ -358,7 +355,7 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault(); 
             // ตรวจสอบและปิดกล้องถ้ายังเปิดอยู่
-            if (html5QrCode) {
+            if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().then(() => {
                     qrReaderContainer.style.display = 'none';
                     btnScan.textContent = 'สแกน QR';
@@ -376,16 +373,17 @@
                 if (html5QrCode) {
                     html5QrCode.stop().then(() => {
                         qrReaderContainer.style.display = 'none';
-                        btnScan.textContent = 'สแกน QR';
+                        btnScan.textContent = 'สแกน QR'; // เปลี่ยนกลับเป็น "สแกน QR"
+                        statusMessage.textContent = ''; // ล้างสถานะ
                     }).catch(err => {
-                        statusMessage.innerHTML = 'เกิดข้อผิดพลาดในการหยุดกล้อง: ' + err;
+                        statusMessage.innerHTML = '<span style="color:#dc3545;">เกิดข้อผิดพลาดในการหยุดกล้อง: ' + err + '</span>';
                         console.error("Error stopping QR scanner:", err);
                     });
                 }
             } else {
                 // ถ้ากล้องปิดอยู่: ให้เตรียมและเริ่มสแกน
                 qrReaderContainer.style.display = 'block';
-                btnScan.textContent = 'ยกเลิกสแกน';
+                btnScan.textContent = 'ยกเลิกสแกน'; // เปลี่ยนเป็น "ยกเลิกสแกน"
                 statusMessage.innerHTML = '<span class="loading-text">กำลังโหลดกล้อง...</span>';
 
                 if (!html5QrCode) {
@@ -400,34 +398,32 @@
                         qrReaderContainer.style.display = 'none';
                         btnScan.textContent = 'สแกน QR';
                         
-                        // 2. นำผลลัพธ์ไปใส่ในช่องค้นหาและค้นหาอัตโนมัติ
+                        // 2. นำผลลัพธ์ไปใส่ในช่องค้นหา
                         queryInput.value = decodedText;
-                        statusMessage.textContent = 'สแกนสำเร็จ: ' + decodedText;
                         
-                        // 3. เริ่มการค้นหาข้อมูล
+                        // 3. เริ่มการค้นหาข้อมูลอัตโนมัติ
                         performSearch(decodedText);
                         
                     }).catch((err) => {
                          // การจัดการข้อผิดพลาดในการหยุดสแกน
-                        statusMessage.innerHTML = 'สแกนสำเร็จ แต่หยุดกล้องไม่ได้: ' + err;
+                        statusMessage.innerHTML = '<span style="color:#dc3545;">สแกนสำเร็จ แต่หยุดกล้องไม่ได้: ' + err + '</span>';
                         console.error("Error stopping QR scanner after success:", err);
                     });
                 };
                 
-                // เริ่มสแกนโดยใช้กล้องหลัง (prefer rear camera)
+                // เริ่มสแกนโดยใช้กล้องหลัง
                 html5QrCode.start(
-                    { facingMode: "environment" }, // ใช้กล้องหลัง
+                    { facingMode: "environment" }, 
                     {
-                        fps: 10,    // เฟรมต่อวินาที
-                        qrbox: {width: 250, height: 250} // ขนาดของกรอบสแกน
+                        fps: 10,    
+                        qrbox: {width: 250, height: 250} 
                     },
                     qrCodeSuccessCallback,
                     (errorMessage) => {
-                        // ฟังก์ชันสำหรับการแจ้งเตือนเมื่อสแกนไม่สำเร็จ (ไม่จำเป็นต้องแสดงทุกครั้ง)
-                        // console.log("QR Scan Error:", errorMessage);
+                        // ไม่ต้องแสดง error message ทุกครั้งที่สแกนไม่สำเร็จ
                     }
                 ).then(() => {
-                    statusMessage.textContent = ''; // ล้างสถานะเมื่อเริ่มสแกนสำเร็จ
+                    statusMessage.textContent = 'พร้อมสแกน...'; // แจ้งสถานะพร้อม
                 })
                 .catch((err) => {
                     // การจัดการข้อผิดพลาดในการเริ่มกล้อง (เช่น ผู้ใช้ไม่อนุญาต)
