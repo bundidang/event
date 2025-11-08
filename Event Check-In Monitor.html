@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monitor Registration (Realtime)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Prompt', sans-serif !important; }
+    body{ background:#f7f9fb }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="container mx-auto p-4 md:p-8">
+    <header class="mb-8 p-6 bg-white shadow-xl rounded-xl">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 mb-2">
+        Monitor Registration (Realtime)
+      </h1>
+      <p class="text-gray-500 mb-6">แสดงรายการผู้ที่ Check-In ล่าสุดและสรุปจำนวนรวม</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-indigo-50 p-4 rounded-lg flex items-center shadow-md">
+          <!-- modern users icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <div>
+            <div class="text-sm font-medium text-indigo-600">Pre-Register</div>
+            <div id="total-count" class="text-3xl font-bold text-indigo-800 animate-pulse">0</div>
+          </div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg flex items-center shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <div class="text-sm font-medium text-green-600">Check-In</div>
+            <div id="checked-in-count" class="text-3xl font-bold text-green-800 animate-pulse">0</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 id="results-header" class="text-xl font-semibold text-gray-700 mb-4">รายการ Check-In ล่าสุด (0 รายการ)</h2>
+      <div id="results-container" class="space-y-4">
+        <p id="initial-message" class="text-center text-gray-500 p-8">กำลังโหลดข้อมูล...</p>
+      </div>
+      <p class="mt-4 text-center text-sm text-gray-500">อัปเดตอัตโนมัติทุก 30 วินาที</p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-message" class="fixed bottom-4 right-4 z-50 transition-transform transform translate-x-full duration-300 ease-out p-4 rounded-lg shadow-xl text-white font-medium max-w-sm">
+    <div id="toast-content"></div>
+  </div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwIIfwfjnphl90NtgH03GycB5n39Ogz-6KtqSXsX3OxenqMdHhGm5YN7kaRFOruzE1_/exec";
+
+const TOTAL_COUNT_EL = document.getElementById('total-count');
+const CHECKED_IN_COUNT_EL = document.getElementById('checked-in-count');
+const RESULTS_CONTAINER = document.getElementById('results-container');
+const RESULTS_HEADER = document.getElementById('results-header');
+const INITIAL_MESSAGE = document.getElementById('initial-message');
+
+let allRecords = [];
+
+/* ---------- Toast ---------- */
+function showToast(message, type='error') {
+  const toastEl = document.getElementById('toast-message');
+  const contentEl = document.getElementById('toast-content');
+  toastEl.className = 'fixed bottom-4 right-4 z-50 transition-transform transform translate-x-full duration-300 ease-out p-4 rounded-lg shadow-xl text-white font-medium max-w-sm';
+  toastEl.classList.add(type==='success'?'bg-green-600':type==='info'?'bg-blue-600':'bg-red-600');
+  contentEl.textContent = message;
+  requestAnimationFrame(()=>{ toastEl.classList.remove('translate-x-full'); toastEl.classList.add('translate-x-0'); });
+  setTimeout(()=>{ toastEl.classList.remove('translate-x-0'); toastEl.classList.add('translate-x-full'); }, 3500);
+}
+
+/* ---------- Helpers ---------- */
+const lcKeys = o => { const out={}; Object.keys(o||{}).forEach(k=>out[k.toLowerCase()]=o[k]); return out; };
+const pickKey = (o,keys) => {const l=lcKeys(o); for(const k of keys) if(l.hasOwnProperty(k)) return k; return null;};
+const toDateSafe = v => { if(!v) return null; const d=new Date(v); return isNaN(d)?null:d; };
+
+/* สร้าง date/time แยกบรรทัด (ปฏิทินไทย) */
+function toDateTimeParts(ts){
+  const d = toDateSafe(ts);
+  if(!d) return {date:'', time:''};
+  const date = d.toLocaleDateString('th-TH',{day:'numeric',month:'numeric',year:'numeric'});
+  const time = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  return {date, time};
+}
+
+/* ---------- Normalize & Sort ---------- */
+const KEY_CANDIDATES = {
+  timestamp: ['check-in time','timestamp','check_in_time','checkintime','time','เวลาเช็คอิน','เช็คอิน','วันที่','เวลา'],
+  order:     ['checkin_no','seq','order','index','ลำดับ','no','เลขที่'],
+  status:    ['status','สถานะ','เช็คอินสถานะ','checkin_status'],
+  name:      ['name','firstname','first_name','ชื่อ'],
+  surname:   ['surname','lastname','last_name','นามสกุล'],
+  position:  ['position','ตำแหน่ง'],
+  company:   ['company','องค์กร','บริษัท','หน่วยงาน'],
+  qr:        ['qr','qrcode','qr code','qr_url','qr-url','qrcodeurl','qrimage','qr_image','รูปqr','คิวอาร์']
+};
+
+function normalizeRows(rawRows){
+  return (rawRows||[]).map(r=>{
+    const rk = lcKeys(r);
+    const kTimestamp = pickKey(r, KEY_CANDIDATES.timestamp);
+    const kOrder     = pickKey(r, KEY_CANDIDATES.order);
+    const kStatus    = pickKey(r, KEY_CANDIDATES.status);
+    const kName      = pickKey(r, KEY_CANDIDATES.name);
+    const kSurname   = pickKey(r, KEY_CANDIDATES.surname);
+    const kPosition  = pickKey(r, KEY_CANDIDATES.position);
+    const kCompany   = pickKey(r, KEY_CANDIDATES.company);
+    const kQR        = pickKey(r, KEY_CANDIDATES.qr);
+
+    const statusRaw = kStatus ? rk[kStatus] : '';
+    const statusStr = (statusRaw ?? '').toString().toLowerCase();
+    const inferredChecked =
+      (!!kOrder && rk[kOrder] !== undefined && rk[kOrder] !== '') ||
+      (!!kTimestamp && !!rk[kTimestamp]) ||
+      statusStr.includes('check in') ||
+      statusStr.includes('เช็คอิน');
+
+    return {
+      name: (r.name ?? (kName ? rk[kName] : '') ?? '').toString(),
+      surname: (r.surname ?? (kSurname ? rk[kSurname] : '') ?? '').toString(),
+      position: (r.position ?? (kPosition ? rk[kPosition] : '') ?? '').toString(),
+      company: (r.company ?? (kCompany ? rk[kCompany] : '') ?? '').toString(),
+      qr: (r.qr ?? (kQR ? rk[kQR] : '') ?? '').toString(),
+      status: r.status ?? (kStatus ? rk[kStatus] : (inferredChecked ? 'Check In' : '')) ?? '',
+      timestamp: r['check-in time'] ?? (kTimestamp ? rk[kTimestamp] : '') ?? '',
+      order: r.order ?? (kOrder ? rk[kOrder] : '') ?? ''
+    };
+  });
+}
+
+function sortByCheckin(records){
+  const haveOrder = records.some(r => r.order !== '' && r.order != null);
+  if (haveOrder){
+    return [...records].sort((a,b)=>{
+      const na = Number(String(a.order).replace(/[^\d.-]/g,'')); 
+      const nb = Number(String(b.order).replace(/[^\d.-]/g,'')); 
+      const aa = isNaN(na)?Infinity:na;
+      const bb = isNaN(nb)?Infinity:nb;
+      return aa - bb;
+    });
+  }
+  return [...records].sort((a,b)=>{
+    const ta = toDateSafe(a.timestamp)?.getTime() ?? -Infinity;
+    const tb = toDateSafe(b.timestamp)?.getTime() ?? -Infinity;
+    return tb - ta; // ใหม่ → เก่า
+  });
+}
+
+/* ---------- PRINT LABEL (70×50 mm, Prompt 10pt) ---------- */
+function buildLabelHTML(rec){
+  const first   = (rec.name||'').toString().trim();
+  const last    = (rec.surname||'').toString().trim();
+  const company = (rec.company||'').toString().trim();
+  const qrUrl   = (rec.qr||'').toString().trim();
+
+  return `
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Label</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400&display=swap" rel="stylesheet">
+  <style>
+    @page { size: 70mm 50mm; margin: 0; }
+    @media print { body { -webkit-print-color-adjust: exact; } }
+    html,body{
+      width:70mm; height:50mm; margin:0; padding:0;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Prompt',sans-serif; font-size:10pt; font-weight:400; color:#000;
+    }
+    .wrap{
+      width:100%; height:100%;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      text-align:center; line-height:1.35;
+    }
+    .qr{ width:22mm; height:22mm; margin-bottom:4mm; display:flex; align-items:center; justify-content:center; }
+    .qr img{ width:100%; height:100%; object-fit:contain; image-rendering:pixelated; }
+    .name{ margin-bottom:1mm; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="qr">${qrUrl ? `<img id="qr-img" src="${qrUrl}" referrerpolicy="no-referrer" alt="QR Code">` : ``}</div>
+    <div class="name">${first} ${last}</div>
+    <div class="company">${company}</div>
+  </div>
+</body>
+</html>`;
+}
+
+function printLabel(rec){
+  const html = buildLabelHTML(rec);
+  const old = document.getElementById('print-frame');
+  if (old) old.remove();
+  const iframe = document.createElement('iframe');
+  iframe.id = 'print-frame';
+  iframe.style.position = 'fixed';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.style.visibility = 'hidden';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+
+  function waitImages(d){
+    const imgs = Array.from(d.images || []);
+    if (imgs.length === 0) return Promise.resolve();
+    return Promise.all(imgs.map(img=>{
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise(res=>{
+        img.addEventListener('load', res, {once:true});
+        img.addEventListener('error', res, {once:true});
+      });
+    }));
+  }
+  const iw = iframe.contentWindow;
+  const ready = Promise.all([
+    new Promise(res => iw.addEventListener('load', res, {once:true})),
+    (doc.fonts && doc.fonts.ready) ? doc.fonts.ready : Promise.resolve()
+  ]).then(()=>waitImages(doc));
+  ready.then(()=>{
+    try{ iw.focus(); iw.print(); }catch(_){}
+    setTimeout(()=>iframe.remove(), 1500);
+  });
+}
+
+/* ---------- Render ---------- */
+function updateCounts(){
+  const total = allRecords.length;
+  const checkedIn = allRecords.filter(r =>
+    (r.status||'').toString().toLowerCase().includes('check in') ||
+    (r.status||'').toString().includes('เช็คอิน') ||
+    r.order !== '' || !!r.timestamp
+  ).length;
+  TOTAL_COUNT_EL.textContent = total;
+  CHECKED_IN_COUNT_EL.textContent = checkedIn;
+  TOTAL_COUNT_EL.classList.remove('animate-pulse');
+  CHECKED_IN_COUNT_EL.classList.remove('animate-pulse');
+}
+
+function displayLiveFeed(records){
+  RESULTS_CONTAINER.innerHTML = '';
+  INITIAL_MESSAGE.classList.add('hidden');
+
+  const checkedInRecords = records.filter(r =>
+    (r.status||'').toString().toLowerCase().includes('check in') ||
+    (r.status||'').toString().includes('เช็คอิน') ||
+    r.order !== '' || !!r.timestamp
+  );
+  const recent = sortByCheckin(checkedInRecords).slice(0,50);
+  RESULTS_HEADER.textContent = `รายการ Check-In ล่าสุด (${recent.length} รายการจากทั้งหมด ${checkedInRecords.length} คน)`;
+
+  if (!recent.length){
+    RESULTS_CONTAINER.innerHTML = '<p class="text-center text-gray-500 p-8">ยังไม่มีผู้ Check-In</p>';
+    return;
+  }
+  recent.forEach(r=>{
+    const fullName = `${r.name||''} ${r.surname||''}`.trim() || 'N/A';
+    const {date, time} = toDateTimeParts(r.timestamp);
+
+    const card = document.createElement('div');
+    card.className = 'bg-white p-4 rounded-lg shadow-sm border border-green-200 flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 hover:bg-green-50';
+    card.innerHTML = `
+      <div class="flex-grow min-w-0">
+        <p class="text-xl font-bold text-gray-800 truncate">${fullName}</p>
+        <p class="text-sm text-indigo-600 font-medium">${r.position||'N/A'}</p>
+        <p class="text-sm text-gray-500">${r.company||'N/A'}</p>
+      </div>
+      <div class="flex flex-col items-end md:items-center flex-shrink-0">
+        <span class="inline-flex items-center px-3 py-1 text-sm rounded-full bg-green-100 text-green-700 font-semibold mb-1">✅ Check In</span>
+        <p class="text-xs text-gray-400">Date: ${date}</p>
+        <p class="text-xs text-gray-400">Time: ${time}</p>
+        <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+          Print Label 70×50 mm
+        </button>
+      </div>`;
+    card.querySelector('button').addEventListener('click', ()=>printLabel(r));
+    RESULTS_CONTAINER.appendChild(card);
+  });
+}
+
+/* ---------- Loader: JSONP (no CORS) + safe fallback ---------- */
+async function tryFetchFallback(){
+  try{
+    const res = await fetch(`${GAS_URL}?t=${Date.now()}`, {mode:'cors',cache:'no-store'});
+    const js = await res.json();
+    const rows = Array.isArray(js?.data) ? js.data : (Array.isArray(js)?js:[]);
+    allRecords = normalizeRows(rows);
+    updateCounts(); displayLiveFeed(allRecords);
+  }catch(e){
+    showToast('เชื่อมต่อไม่ได้: '+e.message,'error');
+  }
+}
+
+function loadFromGAS_JSONP(){
+  const cbName = 'onGASData_'+Date.now();
+  let finished = false;
+  let timedOut = false;
+  const timeoutId = setTimeout(()=>{ timedOut=true; if(!finished) tryFetchFallback(); }, 4000);
+
+  window[cbName] = (resp)=>{
+    if (finished) return;
+    finished = true;
+    clearTimeout(timeoutId);
+    try{
+      const rows = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp)?resp:[]);
+      allRecords = normalizeRows(rows);
+      updateCounts(); displayLiveFeed(allRecords);
+    }finally{ try{ delete window[cbName]; }catch(_){} }
+  };
+
+  const s = document.createElement('script');
+  s.src = `${GAS_URL}?callback=${cbName}&t=${Date.now()}`;
+  s.async = true;
+  s.onerror = ()=>{ if(!finished && !timedOut) setTimeout(()=>{ if(!finished) tryFetchFallback(); }, 100); };
+  document.body.appendChild(s);
+}
+
+/* ---------- Auto refresh ---------- */
+function tick(){ loadFromGAS_JSONP(); setTimeout(tick, 30000); }
+window.onload = ()=>{ INITIAL_MESSAGE.textContent='กำลังโหลดข้อมูล...'; tick(); };
+</script>
+</body>
+</html>
