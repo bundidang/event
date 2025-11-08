@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Global Styles */
+    body{font-family:'Prompt','Tahoma','Arial',sans-serif;background:#f0f2f5;display:flex;flex-direction:column;align-items:center;padding:20px;color:#333}
+    .container{width:100%;max-width:550px;margin:0 auto} 
+    .header{text-align:center;margin-bottom:30px}
+    .header h1{color:#1a1a1a;font-size:32px;margin-bottom:5px;font-weight:700;} /* Changed from Event Registration to Registration */
+    
+    /* Registration Box Styling */
+    .register-box{background:#fff;padding:40px;border-radius:16px;box-shadow:0 8px 25px rgba(0,0,0,.15);margin-bottom:40px;}
+    
+    /* Input Field Styling */
+    .form-group{margin-bottom:20px;text-align:left;}
+    .form-group label{display:block;color:#ff7f00;font-weight:bold;margin-bottom:5px;font-size:15px;} 
+    /* NOTE: รวม Input และ Select Style */
+    .form-group input, .form-group select {
+      width:100%;
+      padding:12px 15px;
+      border:1px solid #e0e0e0;
+      border-radius:8px;
+      font-size:16px;
+      color:#333;
+      transition:border-color .3s, box-shadow .3s;
+      box-sizing:border-box;
+      background: #fff; 
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color:#ff7f00;
+      box-shadow:0 0 0 3px rgba(255, 127, 0, 0.2);
+      outline:none;
+    }
+    
+    /* Button Styling */
+    .btn-submit{
+      color:#fff;
+      padding:15px 30px;
+      border:none;
+      border-radius:8px;
+      font-size:18px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:background-color .3s, transform .1s;
+      background:#ff7f00;
+      width:100%;
+      margin-top:20px;
+    }
+    .btn-submit:hover{background:#cc6600}
+    .btn-submit:active{transform:scale(0.99);}
+
+    /* Status Message Styling (Loading/Success/Error) */
+    #status-message{margin-top:20px;padding:15px;border-radius:8px;font-size:15px;font-weight:600;text-align:center;color:#6b7280;background:#fefefe;border:1px solid #eee;}
+    .spinner{border:4px solid #f3f3f3;border-top:4px solid #ff7f00;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    .loading-text{color:#ff7f00}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>Registration</h1></div>
+
+    <div class="register-box">
+      <form id="registrationForm">
+        <div class="form-inputs">
+          
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="Name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" name="Surname" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="department">Job/Department</label>
+            <input type="text" id="department" name="Job Department">
+          </div>
+          
+          <div class="form-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="Company" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="mobile">Mobile</label>
+            <input 
+              type="tel" 
+              id="mobile" 
+              name="Moblie" 
+              required 
+              pattern="[0-9]{8,15}" 
+              title="Mobile number must contain only 8 to 15 digits."
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="email">E-Mail</label>
+            <input type="email" id="email" name="E-Mail" required>
+          </div>
+          
+          <button type="submit" class="btn-submit">Confirm Registration</button>
+        </div>
+      </form>
+      <div id="status-message"></div>
+    </div>
+  </div>
+
+  <script>
+    // **Please replace this URL with your deployed Google Apps Script URL**
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_63E2g_MjI1ZljtI6XGryWmxcsrxFUTDtAEWS7mIo7VgDgZ2rhbOtVNWzIPhI46ky/exec"; 
+
+    const form = document.getElementById('registrationForm');
+    const statusMessage = document.getElementById('status-message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // HTML5 form validation will run first due to 'required' and 'pattern' attributes.
+      if (!form.checkValidity()) {
+        return; 
+      }
+
+      // Show loading status
+      statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">Submitting registration data...</span>';
+      
+      const formData = new FormData(form);
+      formData.append('action', 'register'); 
+
+      // Send data to Google Apps Script
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      })
+      .then(r => r.json())
+      .then(data => {
+        statusMessage.textContent = ''; 
+        
+        if (data.status === 'success') {
+          alert(`Registration Successful!\nThank you ${formData.get('Name')} ${formData.get('Surname')} for registering.`);
+          form.reset(); 
+          statusMessage.innerHTML = '<span style="color:#4CAF50;">✅ Registration successful! Thank you for registering.</span>';
+        } else {
+          alert(`Registration Failed: ${data.message || 'Unknown error occurred'}`);
+          statusMessage.innerHTML = `<span style="color:#d9534f;">❌ Registration Failed: ${data.message || 'Please try again'}</span>`;
+        }
+      })
+      .catch(err => {
+        alert('Connection error occurred (Please check the URL and Network)');
+        console.error('Registration Fetch Error:', err);
+        statusMessage.innerHTML = '<span style="color:#d9534f;">❌ Connection Error. Please check your network.</span>';
+      });
+    });
+  </script>
+</body>
+</html>
