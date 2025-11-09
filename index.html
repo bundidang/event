@@ -24,7 +24,7 @@
     .btn-search{background:#ff7f00}.btn-search:hover{background:#cc6600}
     .btn-scan{background:#4CAF50}.btn-scan:hover{background:#45a049}
     .search-info{color:#999;font-size:14px;margin-top:10px}
-    /* === ปรับปรุง Results Container: ลบ scrollbar และปรับเส้นขอบ === */
+    /* === การแก้ไข: ลบ score bar และ responsive */
     #results-container{
       max-height:unset; 
       overflow-y:visible;
@@ -36,16 +36,14 @@
     .result-box{background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,.08);text-align:left;margin-bottom:15px}
     .result-title{display:flex;align-items:center;font-size:20px;font-weight:bold;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:10px;margin-bottom:20px}
     .result-title span{background:#ff7f00;color:#fff;border-radius:50%;width:25px;height:25px;display:flex;justify-content:center;align-items:center;font-size:16px;margin-right:10px}
-    .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px;align-items:flex-start} /* จัดให้อยู่ด้านบนสุด */
-    .data-label{width:180px;color:#555;flex-shrink:0} /* ป้ายกำกับไม่ถูกย่อ */
+    .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px;align-items:flex-start}
+    .data-label{width:180px;color:#555;flex-shrink:0}
     .data-value{
       font-weight:bold;
       color:#333;
       flex-grow:1;
-      /* === การแก้ไขสำหรับการแสดงผลชื่อบริษัทให้เสนอแนวเดียวกัน (ไม่ให้ขึ้นบรรทัดใหม่) === */
-      word-break: break-word; /* ใช้สำหรับการตัดคำที่ยาวมาก เช่น URL */
+      word-break: break-word; /* เพื่อให้ชื่อบริษัทไม่ล้น */
     }
-    /* สไตล์สำหรับลิงก์โทรออก */
     .data-value a[href^="tel:"]{
         color: #007bff;
         text-decoration: none;
@@ -73,12 +71,12 @@
             align-items: stretch;
         }
         .data-label {
-            width: auto; /* ให้ป้ายกำกับใช้พื้นที่เต็ม */
-            margin-bottom: 2px; /* ช่องว่างระหว่างป้ายกำกับกับค่า */
-            font-weight: normal; /* ลดความหนาของป้ายกำกับ */
+            width: auto;
+            margin-bottom: 2px;
+            font-weight: normal;
         }
         .data-value {
-            padding-left: 15px; /* เยื้องค่าไปทางขวาเล็กน้อย */
+            padding-left: 15px;
             font-size: 16px;
         }
     }
@@ -142,7 +140,7 @@
   <script>
     // === CONFIG ===
     // **โปรดเปลี่ยน URL นี้เป็น URL ของ Google Apps Script ที่ Deploy แล้วของคุณ**
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf3NQFtglM5ZZz_x_HNHggKzVt3VD-IffoBFbgOf0oqTtQfPUsCGMOcdrSePBPheTm/exec"; 
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeF222ekJMhL9JKIVTaqTd8kKMV1WhP3Yw7PcMzu-orfywFJp-Chx7SXY39eNzViY/exec"; 
 
     // ฟังก์ชันหลัก จะถูกเรียกเมื่อไลบรารีโหลดสำเร็จ
     function init(){
@@ -166,12 +164,13 @@
       let lastCameraId = null;
 
       // === Check-In Function ===
-      function checkIn(memberCode, memberName){
+      function checkIn(memberCode, memberName, companyName){ // รับชื่อบริษัทมาด้วย
         statusMessage.innerHTML = `<span class="spinner"></span><span class="loading-text">กำลังบันทึกการ Check-In ของ ${memberName}...</span>`;
 
         const formData = new FormData();
         formData.append('action', 'checkin'); // Action สำหรับ Apps Script
         formData.append('code', memberCode); // Code สมาชิก
+        formData.append('company', companyName || ''); // ส่งชื่อบริษัทไป Apps Script (คอลัมน์ F)
         
         // ใช้ setTimeout เพื่อหลีกเลี่ยงการถูกบล็อก
         setTimeout(() => {
@@ -180,7 +179,7 @@
             .then(data => {
               if (data.status === 'success'){
                 // ใช้ Modal/Alert เพื่อแจ้งสถานะ
-                alert(`Check-In สำเร็จ!\nชื่อ: ${memberName}\nเวลา: ${data.timestamp}\n\nสถานะ: ${data.message}`);
+                alert(`Check-In สำเร็จ!\nชื่อ: ${memberName}\nบริษัท: ${companyName || 'ไม่ระบุ'}\nเวลา: ${data.timestamp}\n\nสถานะ: ${data.message}`);
                 // ค้นหาข้อมูลเดิมอีกครั้งเพื่ออัปเดตสถานะในหน้าจอ
                 performSearch(queryInput.value); 
               } else {
@@ -215,7 +214,6 @@
           const fullName = `${item.name||''} ${item.surname||''}`.trim() || 'ไม่ระบุ';
           
           // สร้างลิงก์โทรออก
-          // ใช้ regex ลบอักขระที่ไม่ใช่ตัวเลขหรือเครื่องหมายบวกออก
           const mobileLink = item.mobile ? `<a href="tel:${item.mobile.replace(/[^0-9+]/g, '')}">${item.mobile}</a>` : 'ไม่ระบุ';
 
           const box = document.createElement('div');
@@ -242,18 +240,22 @@
         // **POPUP CHECK-IN CONFIRMATION (ตามคำขอ)**
         if(firstUncheckedItem){ 
           const memberName = `${firstUncheckedItem.name||''} ${firstUncheckedItem.surname||''}`.trim() || 'สมาชิกท่านนี้';
+          const companyName = firstUncheckedItem.company || '';
+          
+          // === การแก้ไข: แสดงผลลัพธ์ตามรูปแบบที่ต้องการ ===
+          const confirmMessage = `พบข้อมูล\n${memberName}\n${companyName}\n\nต้องการ Check-In ใช่หรือไม่?`;
           
           // ใช้ confirm() เพื่อถามผู้ใช้
-          const confirmCheckIn = confirm(`พบข้อมูล: ${memberName}\n\nต้องการ Check-In ใช่หรือไม่?`);
+          const confirmCheckIn = confirm(confirmMessage);
           
           if(confirmCheckIn){
-            // เรียกฟังก์ชัน Check-In หากผู้ใช้เลือก 'ใช่'
-            checkIn(firstUncheckedItem.code, memberName);
+            // เรียกฟังก์ชัน Check-In พร้อมชื่อบริษัท
+            checkIn(firstUncheckedItem.code, memberName, companyName);
           }
         }
       }
 
-      // === Search Function ===
+      // === Search Function (ไม่มีการแก้ไขในส่วนนี้) ===
       function performSearch(queryValue){
         statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">กำลังค้นหา...</span>';
         resultsContainer.style.display = 'none';
