@@ -32,6 +32,31 @@
       border-color: rgba(22, 163, 74, 0.8); /* Total Checked-In */
       box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
     }
+    
+    /* NEW: สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ */
+    /* ใช้ Tailwind Classes เป็นหลักเพื่อความสอดคล้อง */
+    .phone-icon-circle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: black;
+        border-radius: 50%;
+        width: 1.5rem; /* h-6 w-6 */
+        height: 1.5rem;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.1); 
+        flex-shrink: 0; /* ป้องกันการย่อ */
+    }
+    .phone-icon-circle svg {
+        fill: white; /* สีโทรศัพท์เป็นสีขาว */
+        width: 0.875rem; /* h-3.5 w-3.5 */
+        height: 0.875rem;
+    }
+    .phone-icon-anchor:hover .phone-icon-circle {
+        background-color: #4f46e5; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์เป็นสี Indigo */
+    }
+    .phone-icon-anchor:hover span {
+        color: #4f46e5; /* เปลี่ยนสีเบอร์โทรเมื่อโฮเวอร์ */
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -136,7 +161,7 @@ function toDateTimeParts(ts){
   return {date, time};
 }
 
-/* ---------- Normalize & Sort (No Change) ---------- */
+/* ---------- Normalize & Sort (Modified to add phone) ---------- */
 const KEY_CANDIDATES = {
   timestamp: ['check-in time','timestamp','check_in_time','checkintime','time','เวลาเช็คอิน','เช็คอิน','วันที่','เวลา'],
   order:     ['checkin_no','seq','order','index','ลำดับ','no','เลขที่'],
@@ -145,10 +170,13 @@ const KEY_CANDIDATES = {
   surname:   ['surname','lastname','last_name','นามสกุล'],
   position:  ['position','ตำแหน่ง'],
   company:   ['company','องค์กร','บริษัท','หน่วยงาน'],
-  qr:        ['qr','qrcode','qr code','qr_url','qr-url','qrcodeurl','qrimage','qr_image','รูปqr','คิวอาร์']
+  qr:        ['qr','qrcode','qr code','qr_url','qr-url','qrcodeurl','qrimage','qr_image','รูปqr','คิวอาร์'],
+  // *** เพิ่มคีย์สำหรับเบอร์โทรศัพท์ (อ้างอิงจากคอลัมน์ G ใน Sheet) ***
+  phone:     ['phone','mobile','tel','เบอร์โทร','เบอร์โทรศัพท์', 'g']
 };
 
 function normalizeRows(rawRows){
+  // Assumption: rawRows is an array of objects where keys match header names from the Google Sheet
   return (rawRows||[]).map(r=>{
     const rk = lcKeys(r);
     const kTimestamp = pickKey(r, KEY_CANDIDATES.timestamp);
@@ -159,6 +187,8 @@ function normalizeRows(rawRows){
     const kPosition  = pickKey(r, KEY_CANDIDATES.position);
     const kCompany   = pickKey(r, KEY_CANDIDATES.company);
     const kQR        = pickKey(r, KEY_CANDIDATES.qr);
+    // *** ดึงคีย์สำหรับเบอร์โทรศัพท์ ***
+    const kPhone     = pickKey(r, KEY_CANDIDATES.phone); 
 
     const statusRaw = kStatus ? rk[kStatus] : '';
     const statusStr = (statusRaw ?? '').toString().toLowerCase();
@@ -176,7 +206,9 @@ function normalizeRows(rawRows){
       qr: (r.qr ?? (kQR ? rk[kQR] : '') ?? '').toString(),
       status: (r.status ?? (kStatus ? rk[kStatus] : (inferredChecked ? 'Check In' : '')) ?? '').toString().trim(),
       timestamp: r['check-in time'] ?? (kTimestamp ? rk[kTimestamp] : '') ?? '',
-      order: r.order ?? (kOrder ? rk[kOrder] : '') ?? ''
+      order: r.order ?? (kOrder ? rk[kOrder] : '') ?? '',
+      // *** เพิ่มเบอร์โทรศัพท์: ใช้ค่าจากคอลัมน์ G ที่เพิ่มเข้ามาในการเรียกก่อนหน้านี้ ***
+      phone: r.phone ?? (kPhone ? rk[kPhone] : '') ?? ''
     };
   });
 }
@@ -280,7 +312,7 @@ function printLabel(rec){
   });
 }
 
-/* ---------- Render & Filter ---------- */
+/* ---------- Render & Filter (Modified for styling and icon) ---------- */
 function updateCounts(){
   
   // 1. นับจำนวน Invited (Status = 'Check In' เท่านั้น)
@@ -368,21 +400,50 @@ function displayLiveFeed(records, headerText){
         statusBg = 'bg-red-100 text-red-700'; // สีป้ายสถานะ Guest
     }
     
+    // ส่วนการสร้างลิงก์เบอร์โทร
+    const cleanPhone = (r.phone||'').replace(/[^0-9+]/g, '');
+    
+    // โค้ด HTML สำหรับไอคอนสถานะ (Invited/Guest)
+    const statusIcon = isGuest 
+        ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7v1h14v-1a7 7 0 00-7-7z"/>
+           </svg>
+           Guest` 
+        : `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+           </svg>
+           Invited`;
+
     const card = document.createElement('div');
     card.className = `${cardClass} border ${borderClass}`;
     
     card.innerHTML = `
       <div class="flex-grow min-w-0">
-        <p class="text-xl font-bold text-gray-800 truncate">${fullName}</p>
-        <p class="text-sm ${isGuest ? 'text-red-600' : 'text-indigo-600'} font-medium">${r.position||'N/A'}</p>
-        <p class="text-sm text-gray-500">${r.company||'N/A'}</p>
+        <p class="text-xl font-bold ${isGuest ? 'text-red-700' : 'text-indigo-700'} truncate">${fullName}</p>
+        
+        <p class="text-sm text-gray-500 font-medium">${r.position||'N/A'}</p>
+        
+        <p class="text-sm text-gray-700 inline-flex items-center space-x-1 mt-0">
+            ${cleanPhone ? `
+                <a href="tel:${cleanPhone}" class="phone-icon-anchor inline-flex items-center space-x-1">
+                    <span class="phone-icon-circle">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C10.74 21 3 13.26 3 5c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.2 2.2z"/>
+                        </svg>
+                    </span>
+                    <span class="text-gray-800">${r.phone}</span>
+                </a>` : 
+                `<span class="text-gray-500">-</span>`
+            }
+        </p>
+        
+        <p class="text-sm font-bold text-gray-800 mt-2">${r.company||'N/A'}</p>
       </div>
       <div class="flex flex-col items-end md:items-center flex-shrink-0">
         <span class="inline-flex items-center px-3 py-1 text-sm rounded-full ${statusBg} font-semibold mb-1">
-            ${isGuest ? '👤 Guest' : '✅ Invited'}
-        </span>
-        <p class="text-xs text-gray-400">Date: ${date}</p>
-        <p class="text-xs text-gray-400">Time: ${time}</p>
+            ${statusIcon} </span>
+        <p class="text-xs text-gray-400">Date: ${toDateTimeParts(r.timestamp).date}</p>
+        <p class="text-xs text-gray-400">Time: ${toDateTimeParts(r.timestamp).time}</p>
         <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
           Print Label 70×50 mm
         </button>
