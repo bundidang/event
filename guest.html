@@ -166,6 +166,15 @@
       
       const formData = new FormData(form);
       formData.append('action', 'register'); 
+      
+      // *** โค้ดที่แก้ไข: เพิ่ม ' นำหน้าเบอร์มือถือ เพื่อให้ Google Sheet ตีความเป็นข้อความล้วน ***
+      const mobileNumber = formData.get('Moblie');
+      if (mobileNumber) {
+          // ใช้ .set() เพื่อแทนที่ค่าเดิมด้วยค่าใหม่ที่มี ' นำหน้า
+          // Moblie คือชื่อ (name) ของ input field ใน HTML
+          formData.set('Moblie', "'" + mobileNumber);
+      }
+      // ******************************************************************************
 
       // Send data to Google Apps Script
       fetch(APPS_SCRIPT_URL, {
