@@ -33,7 +33,7 @@
       box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
     }
     
-    /* NEW: สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ */
+    /* สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ */
     .phone-icon-circle {
         display: inline-flex;
         align-items: center;
@@ -57,13 +57,52 @@
         color: #4f46e5; 
     }
 
-    /* NEW: ซ่อนปุ่ม Print Label บนหน้าจอขนาดเล็กกว่า md (มือถือ) */
+    /* ซ่อนปุ่ม Print Label บนหน้าจอขนาดเล็กกว่า md (มือถือ) */
     .print-button {
-        display: block; /* แสดงผลบนหน้าจอใหญ่เป็น block */
+        display: block; 
     }
-    @media (max-width: 767px) { /* สำหรับหน้าจอขนาดเล็ก (ต่ำกว่า md) */
+    @media (max-width: 767px) { 
         .print-button {
-            display: none !important; /* ซ่อนปุ่ม Print Label */
+            display: none !important; 
+        }
+    }
+    
+    /* NEW: สไตล์สำหรับจัดช่องว่างของ Date/Time (1 เคาะรอบ |) */
+    .datetime-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af; /* text-gray-400 */
+        font-size: 0.75rem; /* text-xs */
+        /* ทำให้ text-align: center ใช้ได้เมื่ออยู่บนมือถือ */
+        width: 100%; 
+    }
+    .datetime-group > span {
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap; 
+    }
+    .datetime-group .separator {
+        margin: 0 0.25rem; /* ช่องว่าง 1 เคาะ */
+        color: #e5e7eb; /* border-gray-200 */
+        font-weight: 300;
+    }
+
+    /* NEW: การจัดองค์ประกอบด้านขวา (ป้ายสถานะ, วันเวลา, ปุ่ม) ให้อยู่ตรงกลางบนมือถือ */
+    .right-content-area {
+        display: flex; /* ใช้ flex เพื่อจัดองค์ประกอบย่อย */
+        flex-direction: column; /* เรียงเป็นคอลัมน์ */
+        align-items: flex-end; /* จัดชิดขวาตามค่า default สำหรับ desktop */
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 767px) { /* สำหรับหน้าจอขนาดเล็ก (มือถือ) */
+        .right-content-area {
+            align-items: center; /* จัดให้อยู่ตรงกลาง */
+            width: 100%; /* ให้เต็มความกว้าง */
+            margin-top: 0.75rem; /* เพิ่มช่องว่างด้านบนเล็กน้อย */
+            padding-top: 0.75rem; /* เพิ่ม padding บนเส้นแบ่ง */
+            border-top: 1px solid #f3f4f6; /* เส้นแบ่งบางๆ */
         }
     }
   </style>
@@ -165,12 +204,15 @@ const toDateSafe = v => { if(!v) return null; const d=new Date(v); return isNaN(
 function toDateTimeParts(ts){
   const d = toDateSafe(ts);
   if(!d) return {date:'', time:''};
-  const date = d.toLocaleDateString('th-TH',{day:'numeric',month:'numeric',year:'numeric'});
-  const time = d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  // NEW: ใช้ toLocaleString เพื่อให้ได้รูปแบบวันที่และเวลาที่ต้องการ
+  // 8/11/2568 (วันที่)
+  const date = d.toLocaleDateString('th-TH', {day:'numeric',month:'numeric',year:'numeric'});
+  // 22:01:00 (เวลาแบบ 24-hour)
+  const time = d.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit',second:'2-digit', hourCycle: 'h23'});
   return {date, time};
 }
 
-/* ---------- Normalize & Sort (เพิ่ม phone) ---------- */
+/* ---------- Normalize & Sort (เพิ่ม phone เพื่อให้รองรับเบอร์โทรตามภาพ) ---------- */
 const KEY_CANDIDATES = {
   timestamp: ['check-in time','timestamp','check_in_time','checkintime','time','เวลาเช็คอิน','เช็คอิน','วันที่','เวลา'],
   order:     ['checkin_no','seq','order','index','ลำดับ','no','เลขที่'],
@@ -216,7 +258,7 @@ function normalizeRows(rawRows){
       status: (r.status ?? (kStatus ? rk[kStatus] : (inferredChecked ? 'Check In' : '')) ?? '').toString().trim(),
       timestamp: r['check-in time'] ?? (kTimestamp ? rk[kTimestamp] : '') ?? '',
       order: r.order ?? (kOrder ? rk[kOrder] : '') ?? '',
-      // *** เพิ่มเบอร์โทรศัพท์: ใช้ค่าจากคอลัมน์ G ที่เพิ่มเข้ามาในการเรียกก่อนหน้านี้ ***
+      // *** เพิ่มเบอร์โทรศัพท์ ***
       phone: r.phone ?? (kPhone ? rk[kPhone] : '') ?? ''
     };
   });
@@ -321,7 +363,7 @@ function printLabel(rec){
   });
 }
 
-/* ---------- Render & Filter (แก้ไขลำดับการแสดงผล, icon, mobile view) ---------- */
+/* ---------- Render & Filter (ปรับปรุงการแสดงผล) ---------- */
 function updateCounts(){
   
   // 1. นับจำนวน Invited (Status = 'Check In' เท่านั้น)
@@ -422,6 +464,11 @@ function displayLiveFeed(records, headerText){
            </svg>
            Invited`;
 
+    // NEW: โค้ดสำหรับไอคอน Date และ Time
+    const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+    const clockIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+
     const card = document.createElement('div');
     card.className = `${cardClass} border ${borderClass}`;
     
@@ -431,7 +478,7 @@ function displayLiveFeed(records, headerText){
         
         <p class="text-sm text-gray-500 font-medium mt-0">${r.position||'N/A'}</p>
         
-        <p class="text-sm text-gray-700 inline-flex items-center space-x-1 mt-0">
+        <p class="text-sm text-gray-700 inline-flex items-center space-x-1 mt-1">
             ${cleanPhone ? `
                 <a href="tel:${cleanPhone}" class="phone-icon-anchor inline-flex items-center space-x-1">
                     <span class="phone-icon-circle">
@@ -447,13 +494,16 @@ function displayLiveFeed(records, headerText){
         
         <p class="text-sm font-bold text-gray-800 mt-2">${r.company||'N/A'}</p>
       </div>
-      <div class="flex flex-col items-center flex-shrink-0">
+      
+      <div class="right-content-area">
         <span class="inline-flex items-center px-3 py-1 text-sm rounded-full ${statusBg} font-semibold mb-1">
             ${statusIcon}
         </span>
-        <p class="text-xs text-gray-400 text-center">
-            ${date} &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; ${time}
-        </p>
+        <div class="datetime-group">
+            <span class="inline-flex items-center">${calendarIcon}${date}</span>
+            <span class="separator">|</span>
+            <span class="inline-flex items-center">${clockIcon}${time}</span>
+        </div>
         <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 print-button">
           Print Label 70×50 mm
         </button>
@@ -472,7 +522,6 @@ async function tryFetchFallback(){
     allRecords = normalizeRows(rows);
     updateCounts(); 
   }catch(e){
-    // NEW: แก้ไขให้แสดง Error ที่ชัดเจนขึ้นหากเป็น Failed to fetch (CORS/URL ผิด)
     showToast('เชื่อมต่อไม่ได้: '+e.message,'error');
   }
 }
