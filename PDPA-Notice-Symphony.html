@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Notice (PDPA) – SYMPHONY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --bg:#f7f7fb;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Prompt','Tahoma','Arial',sans-serif;
+      background:linear-gradient(180deg,#fff,var(--bg));
+      color:var(--ink);
+    }
+    .wrap{max-width:880px;margin:0 auto;padding:32px 20px 64px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .subtitle{color:var(--muted);margin:4px 0 0 0;font-size:14px}
+
+    /* -------- Language Switcher -------- */
+    .lang-switcher{display:flex;gap:12px}
+    .lang-btn{
+      position:relative;
+      border:1px solid #e9e9e9;
+      background:#fff;
+      border-radius:50%;
+      width:44px;height:44px;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      outline:none;
+    }
+    .lang-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.14)}
+    .lang-btn.active{
+      border-color:#111;
+      box-shadow:0 0 0 3px rgba(0,0,0,.08),0 8px 18px rgba(0,0,0,.18);
+    }
+    .lang-btn.active::before{
+      content:"✓";
+      position:absolute;right:-2px;bottom:-2px;
+      width:16px;height:16px;line-height:16px;
+      border-radius:50%;
+      background:#111;color:#fff;
+      font-size:11px;text-align:center;
+      box-shadow:0 1px 3px rgba(0,0,0,.25);
+    }
+    .flag-icon{width:24px;height:24px;border-radius:50%;transition:transform .2s ease}
+    .lang-btn.active .flag-icon{transform:scale(1.06)}
+
+    /* -------- Card / Text -------- */
+    h1{font-size:28px;margin:0}
+    .card{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      padding:28px;border:1px solid #eee;margin-top:16px
+    }
+    h2,h3{color:var(--ink)}
+    h2{font-size:20px;margin:0 0 10px}
+    h3{font-size:16px;margin:16px 0 8px}
+    p{line-height:1.75;margin:8px 0}
+    ul{margin:6px 0 12px 20px}
+    li{margin:6px 0;line-height:1.6}
+    footer{margin-top:28px;color:var(--muted);font-size:12px;text-align:center}
+    a{color:var(--ink);text-decoration:underline}
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 id="main-title">Privacy Notice for Event Participation (PDPA)</h1>
+        <p class="subtitle" id="company-subtitle">Symphony Communication Public Company Limited</p>
+      </div>
+
+      <!-- Language Switcher -->
+      <div class="lang-switcher" role="group" aria-label="Language">
+        <button class="lang-btn" id="lang-th" onclick="switchLanguage('th')" aria-pressed="false" title="ภาษาไทย">
+          <img src="https://cdn.jsdelivr.net/gh/hjnilsson/country-flags/svg/th.svg" alt="TH" class="flag-icon">
+        </button>
+        <button class="lang-btn active" id="lang-en" onclick="switchLanguage('en')" aria-pressed="true" title="English">
+          <img src="https://cdn.jsdelivr.net/gh/hjnilsson/country-flags/svg/gb.svg" alt="EN" class="flag-icon">
+        </button>
+      </div>
+    </header>
+
+    <!-- Thai -->
+    <div id="thai-content" class="hidden">
+      <section class="card">
+        <h2>วัตถุประสงค์ในการประมวลผลข้อมูล</h2>
+        <p>บริษัทจะเก็บรวบรวม ใช้ และ/หรือเปิดเผยข้อมูลส่วนบุคคลของท่าน เพื่อวัตถุประสงค์เกี่ยวกับการบริหารจัดการกิจกรรมของบริษัท เช่น การยืนยันสิทธิ์เข้าร่วม การติดต่อสื่อสารรายละเอียด/การเปลี่ยนแปลง การสำรวจความพึงพอใจหลังจบงาน และการจัดทำรายงานสรุปเพื่อปรับปรุงคุณภาพการให้บริการ</p>
+
+        <h3>ประเภทข้อมูลส่วนบุคคลที่ประมวลผล</h3>
+        <ul>
+          <li>ข้อมูลระบุตัวตนและการติดต่อ เช่น ชื่อ–นามสกุล ตำแหน่ง บริษัท เบอร์โทรศัพท์ อีเมล</li>
+          <li>ข้อมูลจากการเข้าร่วมกิจกรรม เช่น ภาพถ่าย/ภาพเคลื่อนไหว/วิดีโอภายในงาน เพื่อการประชาสัมพันธ์ของบริษัท</li>
+        </ul>
+
+        <h3>การเปิดเผยข้อมูลส่วนบุคคล</h3>
+        <p>บริษัทอาจเปิดเผยข้อมูลของท่านต่อผู้ให้บริการหรือคู่ค้าทางธุรกิจที่เกี่ยวข้องกับการจัดงาน (เช่น ผู้จัดสถานที่ ผู้ผลิตของที่ระลึก ผู้รับจ้างถ่ายภาพ/วิดีโอ) เท่าที่จำเป็นและตามวัตถุประสงค์ที่ระบุข้างต้น</p>
+
+        <h3>ฐานทางกฎหมายในการประมวลผล</h3>
+        <ul>
+          <li>การปฏิบัติตามสัญญา/การดำเนินการตามคำขอของเจ้าของข้อมูลก่อนเข้าทำสัญญา</li>
+          <li>ฐานผลประโยชน์โดยชอบด้วยกฎหมายของบริษัท</li>
+          <li>ความยินยอมของท่านสำหรับการสื่อสารการตลาดหรือการประชาสัมพันธ์ในอนาคต (หากมี)</li>
+        </ul>
+
+        <h3>ระยะเวลาการเก็บรักษา</h3>
+        <p>บริษัทจะเก็บรักษาข้อมูลส่วนบุคคลเท่าที่จำเป็นตามวัตถุประสงค์ และ/หรือ ตามที่กฎหมายกำหนด โดยเมื่อพ้นระยะเวลา ข้อมูลจะถูกลบหรือทำให้ไม่สามารถระบุตัวตนได้อย่างเหมาะสม</p>
+
+        <h3>สิทธิของเจ้าของข้อมูล</h3>
+        <ul>
+          <li>สิทธิขอเข้าถึงและขอสำเนาข้อมูล</li>
+          <li>สิทธิขอให้แก้ไขให้ถูกต้อง เป็นปัจจุบัน และสมบูรณ์</li>
+          <li>สิทธิขอให้ลบ/ทำลายหรือระงับการใช้ข้อมูล</li>
+          <li>สิทธิถอนความยินยอมที่ได้ให้ไว้</li>
+          <li>สิทธิร้องเรียนต่อหน่วยงานกำกับดูแล</li>
+        </ul>
+
+        <h3>ช่องทางติดต่อ DPO/PDPA</h3>
+        <p>อีเมล: <a href="mailto:dpo@symphony.net.th">dpo@symphony.net.th</a></p>
+      </section>
+    </div>
+
+    <!-- English -->
+    <div id="english-content">
+      <section class="card">
+        <h2>Objectives of Personal Data Processing</h2>
+        <p>The Company will collect, use, and/or disclose your personal data for the purpose of managing the Company's activities, such as verifying the right to participate, communicating details/changes, conducting post-event satisfaction surveys, and preparing summary reports to improve service quality.</p>
+
+        <h3>Types of Personal Data Processed</h3>
+        <ul>
+          <li>Identification and contact data, such as Name-Surname, Position, Company, Phone number, Email.</li>
+          <li>Data from event participation, such as photographs/motion pictures/videos within the event for the Company's public relations purposes.</li>
+        </ul>
+
+        <h3>Disclosure of Personal Data</h3>
+        <p>The Company may disclose your data to service providers or business partners involved in the event organization (e.g., venue providers, souvenir producers, photographers/videographers) only as necessary and for the purposes stated above.</p>
+
+        <h3>Legal Basis for Processing</h3>
+        <ul>
+          <li>Performance of a contract / Taking steps at the request of the data subject prior to entering into a contract.</li>
+          <li>Legitimate interest of the Company.</li>
+          <li>Your consent for future marketing communications or public relations (if applicable).</li>
+        </ul>
+
+        <h3>Retention Period</h3>
+        <p>The Company will retain personal data for as long as necessary for the purposes, and/or as required by law. Once the period has passed, the data will be deleted or appropriately anonymized.</p>
+
+        <h3>Data Subject Rights</h3>
+        <ul>
+          <li>Right to access and obtain a copy of the data.</li>
+          <li>Right to request rectification to be accurate, current, and complete.</li>
+          <li>Right to request erasure/destruction or restriction of use of the data.</li>
+          <li>Right to withdraw consent given.</li>
+          <li>Right to lodge a complaint with the supervisory authority.</li>
+        </ul>
+
+        <h3>DPO/PDPA Contact Channel</h3>
+        <p>Email: <a href="mailto:dpo@symphony.net.th">dpo@symphony.net.th</a></p>
+      </section>
+    </div>
+
+    <footer>
+      © <span id="y"></span> Symphony Communication PCL. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    function setActive(lang){
+      const thBtn = document.getElementById('lang-th');
+      const enBtn = document.getElementById('lang-en');
+      thBtn.classList.toggle('active', lang==='th');
+      enBtn.classList.toggle('active', lang==='en');
+    }
+
+    function switchLanguage(lang) {
+      const thai = document.getElementById('thai-content');
+      const eng = document.getElementById('english-content');
+      const title = document.getElementById('main-title');
+      const subtitle = document.getElementById('company-subtitle');
+
+      if (lang === 'en') {
+        thai.classList.add('hidden');
+        eng.classList.remove('hidden');
+        title.textContent = 'Privacy Notice for Event Participation (PDPA)';
+        subtitle.textContent = 'Symphony Communication Public Company Limited';
+        document.title = 'Privacy Notice (PDPA) – SYMPHONY';
+        document.documentElement.lang = 'en';
+      } else {
+        thai.classList.remove('hidden');
+        eng.classList.add('hidden');
+        title.textContent = 'ประกาศความเป็นส่วนตัวสำหรับการเข้าร่วมกิจกรรม (PDPA)';
+        subtitle.textContent = 'บริษัท ซิมโฟนี่ คอมมูนิเคชั่น จำกัด (มหาชน)';
+        document.title = 'ประกาศความเป็นส่วนตัว (PDPA) – SYMPHONY';
+        document.documentElement.lang = 'th';
+      }
+      setActive(lang);
+      try { localStorage.setItem('pdpa_lang', lang); } catch {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // ตั้งค่าเริ่มต้นเป็นภาษาอังกฤษเสมอ
+      switchLanguage('en');
+    });
+  </script>
+</body>
+</html>
