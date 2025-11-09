@@ -120,13 +120,11 @@
           <div class="form-group">
             <label for="mobile">Mobile</label>
             <input 
-              type="tel" 
+              type="text" 
               id="mobile" 
               name="Moblie" 
               required 
-              pattern="[0-9]{8,15}" 
-              title="Mobile number must contain only 8 to 15 digits."
-            >
+              >
           </div>
           
           <div class="form-group">
@@ -148,7 +146,7 @@
 
   <script>
     // **Please replace this URL with your deployed Google Apps Script URL**
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeF222ekJMhL9JKIVTaqTd8kKMV1WhP3Yw7PcMzu-orfywFJp-Chx7SXY39eNzViY/exec"; 
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9NQ9itPQD7a1uSeUMCG1JIy5Dwe3yEHTuMy7fGgQpE50AXH4F-Con_os_2vQqy7xW/exec"; 
 
     const form = document.getElementById('registrationForm');
     const statusMessage = document.getElementById('status-message');
@@ -156,7 +154,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // HTML5 form validation will run first due to 'required' and 'pattern' attributes.
+      // HTML5 form validation will run first due to 'required' attributes.
       if (!form.checkValidity()) {
         return; 
       }
