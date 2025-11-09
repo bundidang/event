@@ -34,7 +34,6 @@
     }
     
     /* NEW: สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ */
-    /* ใช้ Tailwind Classes เป็นหลักเพื่อความสอดคล้อง */
     .phone-icon-circle {
         display: inline-flex;
         align-items: center;
@@ -44,18 +43,28 @@
         width: 1.5rem; /* h-6 w-6 */
         height: 1.5rem;
         box-shadow: 0 0 0 1px rgba(0,0,0,0.1); 
-        flex-shrink: 0; /* ป้องกันการย่อ */
+        flex-shrink: 0; 
     }
     .phone-icon-circle svg {
-        fill: white; /* สีโทรศัพท์เป็นสีขาว */
+        fill: white; 
         width: 0.875rem; /* h-3.5 w-3.5 */
         height: 0.875rem;
     }
     .phone-icon-anchor:hover .phone-icon-circle {
-        background-color: #4f46e5; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์เป็นสี Indigo */
+        background-color: #4f46e5; 
     }
     .phone-icon-anchor:hover span {
-        color: #4f46e5; /* เปลี่ยนสีเบอร์โทรเมื่อโฮเวอร์ */
+        color: #4f46e5; 
+    }
+
+    /* NEW: ซ่อนปุ่ม Print Label บนหน้าจอขนาดเล็กกว่า md (มือถือ) */
+    .print-button {
+        display: block; /* แสดงผลบนหน้าจอใหญ่เป็น block */
+    }
+    @media (max-width: 767px) { /* สำหรับหน้าจอขนาดเล็ก (ต่ำกว่า md) */
+        .print-button {
+            display: none !important; /* ซ่อนปุ่ม Print Label */
+        }
     }
   </style>
 </head>
@@ -138,7 +147,7 @@ let allRecords = [];
 // *** แก้ไข: เปลี่ยนสถานะเริ่มต้นจาก 'Invited' เป็น 'All' ***
 let currentFilter = 'All'; 
 
-/* ---------- Toast and Helpers (No Change) ---------- */
+/* ---------- Toast and Helpers ---------- */
 function showToast(message, type='error') {
   const toastEl = document.getElementById('toast-message');
   const contentEl = document.getElementById('toast-content');
@@ -161,7 +170,7 @@ function toDateTimeParts(ts){
   return {date, time};
 }
 
-/* ---------- Normalize & Sort (Modified to add phone) ---------- */
+/* ---------- Normalize & Sort (เพิ่ม phone) ---------- */
 const KEY_CANDIDATES = {
   timestamp: ['check-in time','timestamp','check_in_time','checkintime','time','เวลาเช็คอิน','เช็คอิน','วันที่','เวลา'],
   order:     ['checkin_no','seq','order','index','ลำดับ','no','เลขที่'],
@@ -312,7 +321,7 @@ function printLabel(rec){
   });
 }
 
-/* ---------- Render & Filter (Modified for styling and icon) ---------- */
+/* ---------- Render & Filter (แก้ไขลำดับการแสดงผล, icon, mobile view) ---------- */
 function updateCounts(){
   
   // 1. นับจำนวน Invited (Status = 'Check In' เท่านั้น)
@@ -333,7 +342,6 @@ function updateCounts(){
   CHECKED_IN_COUNT_EL.classList.remove('animate-pulse');
 
   // หลังจากอัปเดตตัวเลข ให้ทำการกรองและแสดงผลตามสถานะปัจจุบัน
-  // *** แก้ไข: เพิ่มการเรียกใช้ filterRecords(currentFilter) แม้ว่า currentFilter จะเป็น 'All' แล้ว ***
   filterRecords(currentFilter, false); 
 }
 
@@ -421,7 +429,7 @@ function displayLiveFeed(records, headerText){
       <div class="flex-grow min-w-0">
         <p class="text-xl font-bold ${isGuest ? 'text-red-700' : 'text-indigo-700'} truncate">${fullName}</p>
         
-        <p class="text-sm text-gray-500 font-medium">${r.position||'N/A'}</p>
+        <p class="text-sm text-gray-500 font-medium mt-0">${r.position||'N/A'}</p>
         
         <p class="text-sm text-gray-700 inline-flex items-center space-x-1 mt-0">
             ${cleanPhone ? `
@@ -439,12 +447,14 @@ function displayLiveFeed(records, headerText){
         
         <p class="text-sm font-bold text-gray-800 mt-2">${r.company||'N/A'}</p>
       </div>
-      <div class="flex flex-col items-end md:items-center flex-shrink-0">
+      <div class="flex flex-col items-center flex-shrink-0">
         <span class="inline-flex items-center px-3 py-1 text-sm rounded-full ${statusBg} font-semibold mb-1">
-            ${statusIcon} </span>
-        <p class="text-xs text-gray-400">Date: ${toDateTimeParts(r.timestamp).date}</p>
-        <p class="text-xs text-gray-400">Time: ${toDateTimeParts(r.timestamp).time}</p>
-        <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+            ${statusIcon}
+        </span>
+        <p class="text-xs text-gray-400 text-center">
+            ${date} &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp; ${time}
+        </p>
+        <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 print-button">
           Print Label 70×50 mm
         </button>
       </div>`;
@@ -462,6 +472,7 @@ async function tryFetchFallback(){
     allRecords = normalizeRows(rows);
     updateCounts(); 
   }catch(e){
+    // NEW: แก้ไขให้แสดง Error ที่ชัดเจนขึ้นหากเป็น Failed to fetch (CORS/URL ผิด)
     showToast('เชื่อมต่อไม่ได้: '+e.message,'error');
   }
 }
