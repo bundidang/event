@@ -4,22 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Monitor Registration (Realtime)</title>
-  <script src="https://cdn.tailwindcss.com">
-const toDateSafe = v => {
-  if (!v) return null;
-  // First try native parsing
-  const d1 = new Date(v);
-  if (!isNaN(d1)) return d1;
-
-  // Support "yyyy-MM-dd HH:mm:ss" and "yyyy-MM-ddTHH:mm:ss"
-  const m = String(v).match(/^(\"?\d{4}\"?)-(\"?\d{2}\"?)-(\"?\d{2}\"?)[ T](\"?\d{2}\"?):(\"?\d{2}\"?):(\"?\d{2}\"?)$/);
-  if (m) {
-    const [_, y, mo, da, hh, mm, ss] = m.map(s => String(s).replace(/\\"/g, '').replace(/\"/g, '').replace(/"/g,''));
-    return new Date(Number(y), Number(mo) - 1, Number(da), Number(hh), Number(mm), Number(ss));
-  }
-  return null;
-};
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Prompt', sans-serif !important; }
@@ -119,6 +104,10 @@ const toDateSafe = v => {
             padding-top: 0.75rem; /* เพิ่ม padding บนเส้นแบ่ง */
             border-top: 1px solid #f3f4f6; /* เส้นแบ่งบางๆ */
         }
+        /* [FIX] เพื่อแก้ไขปัญหาไม่แสดง Timestamp บนมือถือ: บังคับให้แสดงผล */
+        .datetime-group { 
+            display: flex !important;
+        }
     }
   </style>
 </head>
@@ -182,7 +171,7 @@ const toDateSafe = v => {
 
 <script>
 /* ---------- CONFIG ---------- */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxlEsQHTPyonz9YJIRppUZvUMIAyMM4Cst4RTiqYq_e4-HgYYtUiUBAoZAJpNr_5Aiz/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx1mUcX0lzIoCTLTF0P6FpWR7mz5b_e6Sda7aNHDXFBYBfqQUzay5ZD4H2o8gmnTkpe/exec";
 
 // แก้ไข ID เพื่อให้ชัดเจนขึ้น
 const INVITED_COUNT_EL = document.getElementById('invited-count'); 
