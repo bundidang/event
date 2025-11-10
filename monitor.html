@@ -104,9 +104,9 @@
             padding-top: 0.75rem; /* เพิ่ม padding บนเส้นแบ่ง */
             border-top: 1px solid #f3f4f6; /* เส้นแบ่งบางๆ */
         }
-        /* [FIX] เพื่อแก้ไขปัญหาไม่แสดง Timestamp บนมือถือ: บังคับให้แสดงผล */
+        /* [FIX] ลบ display: flex !important; ที่ซ้ำซ้อนและอาจเกิดปัญหาออก */
         .datetime-group { 
-            display: flex !important;
+            /* display: flex !important; */
         }
     }
   </style>
@@ -379,7 +379,7 @@ function updateCounts(){
   // 3. Total Checked-In: นับรวม Invited + Guest
   const totalCheckedIn = invitedCount + guestCount;
 
-  INVITED_COUNT_EL.textContent = invitedCount; 
+  INVITED_COUNT_EL.textContent = totalCheckedIn - guestCount; // แก้ไข: ให้แสดง Invited
   GUEST_COUNT_EL.textContent = guestCount;
   CHECKED_IN_COUNT_EL.textContent = totalCheckedIn;
   
@@ -472,6 +472,16 @@ function displayLiveFeed(records, headerText){
     const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
     const clockIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
+    // [FIX] เพิ่มการเช็คเงื่อนไขและแสดงข้อความถ้าไม่มีเวลา Check-In
+    const timestampHTML = (date && time) 
+        ? `
+        <div class="datetime-group">
+            <span class="inline-flex items-center">${calendarIcon}${date}</span>
+            <span class="separator">|</span>
+            <span class="inline-flex items-center">${clockIcon}${time}</span>
+        </div>`
+        : `<div class="text-xs text-gray-400 font-medium w-full text-center md:text-right">ยังไม่มีเวลา Check-In</div>`;
+
 
     const card = document.createElement('div');
     card.className = `${cardClass} border ${borderClass}`;
@@ -503,11 +513,7 @@ function displayLiveFeed(records, headerText){
         <span class="inline-flex items-center px-3 py-1 text-sm rounded-full ${statusBg} font-semibold mb-1">
             ${statusIcon}
         </span>
-        <div class="datetime-group">
-            <span class="inline-flex items-center">${calendarIcon}${date}</span>
-            <span class="separator">|</span>
-            <span class="inline-flex items-center">${clockIcon}${time}</span>
-        </div>
+        ${timestampHTML}
         <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 print-button">
           Print Label 70×50 mm
         </button>
