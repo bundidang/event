@@ -7,9 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    /* สไตล์ที่ปรับปรุงเพื่อให้ข้อความและตัวเลขในปุ่มจัด Center */
     * { font-family: 'Prompt', sans-serif !important; }
     body{ background:#f7f9fb }
-    /* สไตล์สำหรับปุ่มที่เป็นตัวนับ */
+    
     .count-button {
       transition: all 0.2s ease-in-out;
       cursor: pointer;
@@ -21,33 +22,37 @@
       transform: translateY(-1px);
     }
     .count-button.active {
-      border-color: rgba(79, 70, 229, 0.8); /* สีน้ำเงินเข้มสำหรับสถานะ Active (Invited) */
+      border-color: rgba(79, 70, 229, 0.8);
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
     }
     .count-button.active.red {
-      border-color: rgba(220, 38, 38, 0.8); /* Guest */
+      border-color: rgba(220, 38, 38, 0.8);
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
     }
     .count-button.active.green {
-      border-color: rgba(22, 163, 74, 0.8); /* Total Checked-In */
+      border-color: rgba(22, 163, 74, 0.8);
       box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
     }
+    .count-button.active.orange {
+      border-color: rgba(249, 115, 22, 0.8);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+    }
     
-    /* สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ */
+    /* สไตล์เฉพาะสำหรับไอคอนโทรศัพท์วงกลมดำ (ไม่มีการเปลี่ยนแปลง) */
     .phone-icon-circle {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         background-color: black;
         border-radius: 50%;
-        width: 1.5rem; /* h-6 w-6 */
+        width: 1.5rem;
         height: 1.5rem;
         box-shadow: 0 0 0 1px rgba(0,0,0,0.1); 
         flex-shrink: 0; 
     }
     .phone-icon-circle svg {
         fill: white; 
-        width: 0.875rem; /* h-3.5 w-3.5 */
+        width: 0.875rem;
         height: 0.875rem;
     }
     .phone-icon-anchor:hover .phone-icon-circle {
@@ -57,7 +62,7 @@
         color: #4f46e5; 
     }
 
-    /* ซ่อนปุ่ม Print Label บนหน้าจอขนาดเล็กกว่า md (มือถือ) */
+    /* ซ่อนปุ่ม Print Label บนหน้าจอขนาดเล็กกว่า md (มือถือ) (ไม่มีการเปลี่ยนแปลง) */
     .print-button {
         display: block; 
     }
@@ -67,14 +72,13 @@
         }
     }
     
-    /* NEW: สไตล์สำหรับจัดช่องว่างของ Date/Time (1 เคาะรอบ |) */
+    /* สไตล์สำหรับจัดช่องว่างของ Date/Time (ไม่มีการเปลี่ยนแปลง) */
     .datetime-group {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #9ca3af; /* text-gray-400 */
-        font-size: 0.75rem; /* text-xs */
-        /* ทำให้ text-align: center ใช้ได้เมื่ออยู่บนมือถือ */
+        color: #9ca3af;
+        font-size: 0.75rem;
         width: 100%; 
     }
     .datetime-group > span {
@@ -83,81 +87,89 @@
         white-space: nowrap; 
     }
     .datetime-group .separator {
-        margin: 0 0.25rem; /* ช่องว่าง 1 เคาะ */
-        color: #e5e7eb; /* border-gray-200 */
+        margin: 0 0.25rem;
+        color: #e5e7eb;
         font-weight: 300;
     }
 
-    /* NEW: การจัดองค์ประกอบด้านขวา (ป้ายสถานะ, วันเวลา, ปุ่ม) ให้อยู่ตรงกลางบนมือถือ */
+    /* การจัดองค์ประกอบด้านขวา (ป้ายสถานะ, วันเวลา, ปุ่ม) ให้อยู่ตรงกลางบนมือถือ (ไม่มีการเปลี่ยนแปลง) */
     .right-content-area {
-        display: flex; /* ใช้ flex เพื่อจัดองค์ประกอบย่อย */
-        flex-direction: column; /* เรียงเป็นคอลัมน์ */
-        align-items: flex-end; /* จัดชิดขวาตามค่า default สำหรับ desktop */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
         flex-shrink: 0;
     }
 
-    @media (max-width: 767px) { /* สำหรับหน้าจอขนาดเล็ก (มือถือ) */
+    @media (max-width: 767px) {
         .right-content-area {
-            align-items: center; /* จัดให้อยู่ตรงกลาง */
-            width: 100%; /* ให้เต็มความกว้าง */
-            margin-top: 0.75rem; /* เพิ่มช่องว่างด้านบนเล็กน้อย */
-            padding-top: 0.75rem; /* เพิ่ม padding บนเส้นแบ่ง */
-            border-top: 1px solid #f3f4f6; /* เส้นแบ่งบางๆ */
-        }
-        /* [FIX] ลบ display: flex !important; ที่ซ้ำซ้อนและอาจเกิดปัญหาออก */
-        .datetime-group { 
-            /* display: flex !important; */
+            align-items: center;
+            width: 100%;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f3f4f6;
         }
     }
   </style>
 </head>
 <body class="min-h-screen">
   <div class="container mx-auto p-4 md:p-8">
-    <header class="mb-8 p-6 bg-white shadow-xl rounded-xl">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 mb-2">
-        Monitor Registration (Realtime)
-      </h1>
-      <p class="text-gray-500 mb-6">แสดงรายการผู้ที่ Check-In ล่าสุดและสรุปจำนวนรวม</p>
+    <header class="mb-8">
+        <div class="p-6 bg-white shadow-xl rounded-xl">
+          <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 mb-2">
+            Monitor Registration (Realtime)
+          </h1>
+          <p class="text-gray-500 mb-6">แสดงรายการผู้ที่ Check-In ล่าสุดและสรุปจำนวนรวม</p>
+        </div>
+    </header>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      
+        <button id="total-checked-in-btn" class="count-button bg-green-50 p-4 rounded-lg flex flex-col items-center shadow-md active green" onclick="filterRecords('All Checked-In')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="text-center">
+            <div class="text-sm font-medium text-green-600">Total Checked-In</div>
+            <div id="checked-in-count" class="text-3xl font-bold text-green-800 animate-pulse">0</div>
+          </div>
+        </button>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <button id="invited-btn" class="count-button bg-indigo-50 p-4 rounded-lg flex items-center shadow-md" onclick="filterRecords('Invited')">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <button id="invited-btn" class="count-button bg-indigo-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Invited Check-In')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-          <div>
-            <div class="text-sm font-medium text-indigo-600">Invited</div>
+          <div class="text-center">
+            <div class="text-sm font-medium text-indigo-600">Invited Check-In</div>
             <div id="invited-count" class="text-3xl font-bold text-indigo-800 animate-pulse">0</div>
           </div>
         </button>
         
-        <button id="guest-btn" class="count-button bg-red-50 p-4 rounded-lg flex items-center shadow-md" onclick="filterRecords('Guest')">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <button id="guest-btn" class="count-button bg-red-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Guest')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          <div>
+          <div class="text-center">
             <div class="text-sm font-medium text-red-600">Guest</div>
             <div id="guest-count" class="text-3xl font-bold text-red-800 animate-pulse">0</div>
           </div>
         </button>
-
-        <button id="total-checked-in-btn" class="count-button bg-green-50 p-4 rounded-lg flex items-center shadow-md active green" onclick="filterRecords('All')">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <div>
-            <div class="text-sm font-medium text-green-600">Total Checked-In</div>
-            <div id="checked-in-count" class="text-3xl font-bold text-green-800 animate-pulse">0</div>
-          </div>
+      
+        <button id="all-invited-btn" class="count-button bg-orange-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Attendee List (Waiting for Check-In)')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h2m-2 4h2m-6-4h.01M6 18h.01"/>
+            </svg>
+            <div class="text-center">
+                <div class="text-sm font-medium text-orange-600">Attendee List (Waiting for Check-In)</div>
+                <div id="all-invited-count" class="text-3xl font-bold text-orange-800 animate-pulse">0</div>
+            </div>
         </button>
-      </div>
-      </header>
-
+    </div>
     <div class="bg-white p-6 rounded-xl shadow-lg">
-      <h2 id="results-header" class="text-xl font-semibold text-gray-700 mb-4">รายการ Total Checked-In ล่าสุด (0 รายการ)</h2>
+      <h2 id="results-header" class="text-xl font-semibold text-gray-700 mb-4">รายการ Total Checked-In ล่าสุด (0 รายการ)</h2> 
       <div id="results-container" class="space-y-4">
         <p id="initial-message" class="text-center text-gray-500 p-8">กำลังโหลดข้อมูล...</p>
       </div>
@@ -170,14 +182,15 @@
   </div>
 
 <script>
-/* ---------- CONFIG ---------- */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw3PRo4XNb_l00I8_2kVqDmkIW-e-jYCSg3AgYK0bCA4Y50HBnfmF5exWd3QWzYlBYX/exec";
+/* ---------- CONFIG (No Change) ---------- */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw408rLny6F3ORIzvseQvfsnUv2JgPW7y617tLYv247tRBl7LkfYXenn8v5dVWaI80b/exec"; // URL นี้ควรถูกแทนที่ด้วย URL จริงของคุณ
 
-// แก้ไข ID เพื่อให้ชัดเจนขึ้น
+const ALL_INVITED_COUNT_EL = document.getElementById('all-invited-count'); 
 const INVITED_COUNT_EL = document.getElementById('invited-count'); 
 const GUEST_COUNT_EL = document.getElementById('guest-count');
 const CHECKED_IN_COUNT_EL = document.getElementById('checked-in-count');
 
+const ALL_INVITED_BTN = document.getElementById('all-invited-btn'); 
 const INVITED_BTN = document.getElementById('invited-btn');
 const GUEST_BTN = document.getElementById('guest-btn');
 const TOTAL_CHECKED_IN_BTN = document.getElementById('total-checked-in-btn');
@@ -187,10 +200,10 @@ const RESULTS_HEADER = document.getElementById('results-header');
 const INITIAL_MESSAGE = document.getElementById('initial-message');
 
 let allRecords = [];
-// *** แก้ไข: เปลี่ยนสถานะเริ่มต้นจาก 'Invited' เป็น 'All' ***
-let currentFilter = 'All'; 
+// ตั้งค่า Default Filter เป็นกล่องสีเขียว
+let currentFilter = 'All Checked-In'; 
 
-/* ---------- Toast and Helpers ---------- */
+/* ---------- Toast and Helpers (No Change) ---------- */
 function showToast(message, type='error') {
   const toastEl = document.getElementById('toast-message');
   const contentEl = document.getElementById('toast-content');
@@ -208,7 +221,6 @@ const toDateSafe = v => { if(!v) return null; const d=new Date(v); return isNaN(
 function toDateTimeParts(ts){
   const d = toDateSafe(ts);
   if(!d) return {date:'', time:''};
-  // NEW: ใช้ toLocaleString เพื่อให้ได้รูปแบบวันที่และเวลาที่ต้องการ
   // 8/11/2568 (วันที่)
   const date = d.toLocaleDateString('th-TH', {day:'numeric',month:'numeric',year:'numeric'});
   // 22:01:00 (เวลาแบบ 24-hour)
@@ -216,22 +228,20 @@ function toDateTimeParts(ts){
   return {date, time};
 }
 
-/* ---------- Normalize & Sort (เพิ่ม phone เพื่อให้รองรับเบอร์โทรตามภาพ) ---------- */
+/* ---------- Normalize & Sort (No Change) ---------- */
 const KEY_CANDIDATES = {
   timestamp: ['check-in time','timestamp','check_in_time','checkintime','time','เวลาเช็คอิน','เช็คอิน','วันที่','เวลา'],
   order:     ['checkin_no','seq','order','index','ลำดับ','no','เลขที่'],
   status:    ['status','สถานะ','เช็คอินสถานะ','checkin_status'],
-  name:      ['name','firstname','first_name','ชื่อ'],
-  surname:   ['surname','lastname','last_name','นามสกุล'],
-  position:  ['position','ตำแหน่ง'],
-  company:   ['company','องค์กร','บริษัท','หน่วยงาน'],
-  qr:        ['qr','qrcode','qr code','qr_url','qr-url','qrcodeurl','qrimage','qr_image','รูปqr','คิวอาร์'],
-  // *** เพิ่มคีย์สำหรับเบอร์โทรศัพท์ (อ้างอิงจากคอลัมน์ G ใน Sheet) ***
+  name:      ['name','firstname','first_name','ชื่อ','c'], 
+  surname:   ['surname','lastname','last_name','นามสกุล','d'],
+  position:  ['position','ตำแหน่ง','e'],
+  company:   ['company','องค์กร','บริษัท','หน่วยงาน','f'],
+  qr:        ['qr','qrcode','qr code','qr_url','qr-url','qrcodeurl','qrimage','qr_image','รูปqr','คิวอาร์','h'],
   phone:     ['phone','mobile','tel','เบอร์โทร','เบอร์โทรศัพท์', 'g']
 };
 
 function normalizeRows(rawRows){
-  // Assumption: rawRows is an array of objects where keys match header names from the Google Sheet
   return (rawRows||[]).map(r=>{
     const rk = lcKeys(r);
     const kTimestamp = pickKey(r, KEY_CANDIDATES.timestamp);
@@ -242,7 +252,6 @@ function normalizeRows(rawRows){
     const kPosition  = pickKey(r, KEY_CANDIDATES.position);
     const kCompany   = pickKey(r, KEY_CANDIDATES.company);
     const kQR        = pickKey(r, KEY_CANDIDATES.qr);
-    // *** ดึงคีย์สำหรับเบอร์โทรศัพท์ ***
     const kPhone     = pickKey(r, KEY_CANDIDATES.phone); 
 
     const statusRaw = kStatus ? rk[kStatus] : '';
@@ -262,7 +271,6 @@ function normalizeRows(rawRows){
       status: (r.status ?? (kStatus ? rk[kStatus] : (inferredChecked ? 'Check In' : '')) ?? '').toString().trim(),
       timestamp: r['check-in time'] ?? (kTimestamp ? rk[kTimestamp] : '') ?? '',
       order: r.order ?? (kOrder ? rk[kOrder] : '') ?? '',
-      // *** เพิ่มเบอร์โทรศัพท์ ***
       phone: r.phone ?? (kPhone ? rk[kPhone] : '') ?? ''
     };
   });
@@ -369,62 +377,82 @@ function printLabel(rec){
 
 /* ---------- Render & Filter (ปรับปรุงการแสดงผล) ---------- */
 function updateCounts(){
-  
-  // 1. นับจำนวน Invited (Status = 'Check In' เท่านั้น)
-  const invitedCount = allRecords.filter(r => r.status === 'Check In').length;
-  
-  // 2. นับจำนวน Guest (Status = 'Guest' เท่านั้น)
-  const guestCount = allRecords.filter(r => r.status === 'Guest').length;
-  
-  // 3. Total Checked-In: นับรวม Invited + Guest
-  const totalCheckedIn = invitedCount + guestCount;
+    
+    // 1. Attendee List (Waiting for Check-In): นับผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-In และไม่ใช่ Guest
+    const allInvitedCount = allRecords.filter(r => 
+        (r.name || r.surname || r.position || r.company || r.phone || r.qr) && // มีข้อมูลในคอลัมน์ c-h
+        r.status !== 'Check In' && 
+        r.status !== 'Guest'
+    ).length;
+    
+    // 2. Invited Check-In (Status = 'Check In')
+    const invitedCheckInCount = allRecords.filter(r => r.status === 'Check In').length;
+    
+    // 3. Guest (Status = 'Guest')
+    const guestCount = allRecords.filter(r => r.status === 'Guest').length;
+    
+    // 4. Total Checked-In: นับรวม Invited Check-In + Guest
+    const totalCheckedIn = invitedCheckInCount + guestCount;
 
-  INVITED_COUNT_EL.textContent = totalCheckedIn - guestCount; // แก้ไข: ให้แสดง Invited
-  GUEST_COUNT_EL.textContent = guestCount;
-  CHECKED_IN_COUNT_EL.textContent = totalCheckedIn;
-  
-  INVITED_COUNT_EL.classList.remove('animate-pulse');
-  GUEST_COUNT_EL.classList.remove('animate-pulse');
-  CHECKED_IN_COUNT_EL.classList.remove('animate-pulse');
+    ALL_INVITED_COUNT_EL.textContent = allInvitedCount; 
+    INVITED_COUNT_EL.textContent = invitedCheckInCount;
+    GUEST_COUNT_EL.textContent = guestCount;
+    CHECKED_IN_COUNT_EL.textContent = totalCheckedIn;
+    
+    ALL_INVITED_COUNT_EL.classList.remove('animate-pulse');
+    INVITED_COUNT_EL.classList.remove('animate-pulse');
+    GUEST_COUNT_EL.classList.remove('animate-pulse');
+    CHECKED_IN_COUNT_EL.classList.remove('animate-pulse');
 
-  // หลังจากอัปเดตตัวเลข ให้ทำการกรองและแสดงผลตามสถานะปัจจุบัน
-  filterRecords(currentFilter, false); 
+    // หลังจากอัปเดตตัวเลข ให้ทำการกรองและแสดงผลตามสถานะปัจจุบัน
+    filterRecords(currentFilter, false); 
 }
 
 function filterRecords(type, refreshButtons = true){
-  currentFilter = type; 
-  let filteredRecords = [];
-  let headerText = 'รายการ Check-In ล่าสุด';
+    currentFilter = type; 
+    let filteredRecords = [];
+    let headerText = 'รายการล่าสุด';
 
-  if (type === 'Invited') {
-    // กรองเฉพาะ Invited (Status = 'Check In')
-    filteredRecords = allRecords.filter(r => r.status === 'Check In');
-    headerText = `รายการ Invited ล่าสุด`;
-  } else if (type === 'Guest') {
-    // กรองเฉพาะ Guest (Status = 'Guest')
-    filteredRecords = allRecords.filter(r => r.status === 'Guest');
-    headerText = `รายการ Guest ล่าสุด`;
-  } else if (type === 'All') {
-    // กรองทั้งหมด (Status = 'Check In' หรือ 'Guest')
-    filteredRecords = allRecords.filter(r => r.status === 'Check In' || r.status === 'Guest');
-    headerText = `รายการ Total Checked-In ล่าสุด`;
-  }
+    // ลำดับการกรองใหม่
+    if (type === 'All Checked-In') {
+        // กรองทั้งหมด (Status = 'Check In' หรือ 'Guest')
+        filteredRecords = allRecords.filter(r => r.status === 'Check In' || r.status === 'Guest');
+        headerText = `รายการ Total Checked-In ล่าสุด`;
+    } else if (type === 'Invited Check-In') {
+        // กรองเฉพาะ Invited (Status = 'Check In')
+        filteredRecords = allRecords.filter(r => r.status === 'Check In');
+        headerText = `รายการ Invited Check-In ล่าสุด`;
+    } else if (type === 'Guest') {
+        // กรองเฉพาะ Guest (Status = 'Guest')
+        filteredRecords = allRecords.filter(r => r.status === 'Guest');
+        headerText = `รายการ Guest ล่าสุด`;
+    } else if (type === 'Attendee List (Waiting for Check-In)') {
+        // กรองผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-In และไม่ใช่ Guest
+        filteredRecords = allRecords.filter(r => 
+            (r.name || r.surname || r.position || r.company || r.phone || r.qr) && 
+            r.status !== 'Check In' &&
+            r.status !== 'Guest'
+        );
+        headerText = `รายการ Attendee List (Waiting for Check-In) ล่าสุด`;
+    }
 
-  // เรียงตามลำดับการบันทึกข้อมูล
-  const sortedRecords = sortByCheckin(filteredRecords); 
+    // เรียงตามลำดับการบันทึกข้อมูล
+    const sortedRecords = sortByCheckin(filteredRecords); 
 
-  displayLiveFeed(sortedRecords, headerText);
+    displayLiveFeed(sortedRecords, headerText);
 
-  // อัปเดตสถานะปุ่ม (Active/Inactive)
-  if(refreshButtons){
-    INVITED_BTN.classList.remove('active');
-    GUEST_BTN.classList.remove('active','red');
-    TOTAL_CHECKED_IN_BTN.classList.remove('active','green');
-    
-    if(type === 'Invited') INVITED_BTN.classList.add('active');
-    else if(type === 'Guest') GUEST_BTN.classList.add('active','red');
-    else if(type === 'All') TOTAL_CHECKED_IN_BTN.classList.add('active','green');
-  }
+    // อัปเดตสถานะปุ่ม (Active/Inactive)
+    if(refreshButtons){
+        ALL_INVITED_BTN.classList.remove('active', 'orange');
+        INVITED_BTN.classList.remove('active');
+        GUEST_BTN.classList.remove('active','red');
+        TOTAL_CHECKED_IN_BTN.classList.remove('active','green');
+        
+        if(type === 'Attendee List (Waiting for Check-In)') ALL_INVITED_BTN.classList.add('active', 'orange');
+        else if(type === 'Invited Check-In') INVITED_BTN.classList.add('active');
+        else if(type === 'Guest') GUEST_BTN.classList.add('active','red');
+        else if(type === 'All Checked-In') TOTAL_CHECKED_IN_BTN.classList.add('active','green');
+    }
 }
 
 
@@ -443,44 +471,69 @@ function displayLiveFeed(records, headerText){
     const {date, time} = toDateTimeParts(r.timestamp);
 
     const isGuest = r.status === 'Guest';
+    const isCheckedIn = r.status === 'Check In' || r.status === 'Guest';
     
+    // ตรวจสอบสถานะ Waiting for Check-In
+    const isWaitingCheckIn = 
+        (r.name || r.surname || r.position || r.company || r.phone || r.qr) && 
+        r.status !== 'Check In' && 
+        r.status !== 'Guest';
+
     // กำหนดสไตล์ตามสถานะ
     let cardClass = 'bg-white p-4 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 ';
-    let borderClass = 'border-indigo-200 hover:bg-indigo-50'; // โทนสีฟ้า/น้ำเงินสำหรับ Invited
-    let statusBg = 'bg-indigo-100 text-indigo-700'; // สีป้ายสถานะ Invited
+    let borderClass = 'border-gray-200 hover:bg-gray-50'; // Default
+    let statusBg = 'bg-gray-100 text-gray-700'; // Default status tag
+    let statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg> Invited (Not Checked)`;
 
-    if (isGuest) {
+
+    if (isWaitingCheckIn) {
+        borderClass = 'border-orange-200 hover:bg-orange-50'; // โทนสีส้มสำหรับ Waiting Check-In
+        statusBg = 'bg-orange-100 text-orange-700'; 
+        // 🚩 ไอคอนสถานะใหม่: Document List (Outline)
+        statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m-7-4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1h-4a1 1 0 00-1 1v4zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg> Waiting for Check-In`;
+    } else if (r.status === 'Check In') {
+        borderClass = 'border-indigo-200 hover:bg-indigo-50'; // โทนสีฟ้า/น้ำเงินสำหรับ Invited Check-In
+        statusBg = 'bg-indigo-100 text-indigo-700';
+        statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+               <path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 00-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 010 7.75"/>
+           </svg> Invited Check-In`;
+    } else if (isGuest) {
         borderClass = 'border-red-200 hover:bg-red-50'; // โทนสีแดง/ชมพูสำหรับ Guest
-        statusBg = 'bg-red-100 text-red-700'; // สีป้ายสถานะ Guest
+        statusBg = 'bg-red-100 text-red-700'; 
+        statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7v1h14v-1a7 7 0 00-7-7z"/>
+           </svg> Guest`;
     }
+    
+    // โทนสีเขียวสำหรับ Total Checked-In
+    let nameTextColor = isWaitingCheckIn ? 'text-orange-700' : isGuest ? 'text-red-700' : 'text-indigo-700';
+    if (currentFilter === 'All Checked-In' && isCheckedIn) {
+        nameTextColor = 'text-green-700';
+    }
+
+
     
     // ส่วนการสร้างลิงก์เบอร์โทร
     const cleanPhone = (r.phone||'').replace(/[^0-9+]/g, '');
     
-    // โค้ด HTML สำหรับไอคอนสถานะ (Invited/Guest)
-    const statusIcon = isGuest 
-        ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7v1h14v-1a7 7 0 00-7-7z"/>
-           </svg>
-           Guest` 
-        : `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-           </svg>
-           Invited`;
-
-    // NEW: โค้ดสำหรับไอคอน Date และ Time
+    // โค้ดสำหรับไอคอน Date และ Time
     const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
     const clockIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-    // [FIX] เพิ่มการเช็คเงื่อนไขและแสดงข้อความถ้าไม่มีเวลา Check-In
-    const timestampHTML = (date && time) 
+    // เพิ่มการเช็คเงื่อนไขและแสดงข้อความถ้าไม่มีเวลา Check-In
+    const timestampHTML = (date && time && isCheckedIn) 
         ? `
         <div class="datetime-group">
             <span class="inline-flex items-center">${calendarIcon}${date}</span>
             <span class="separator">|</span>
             <span class="inline-flex items-center">${clockIcon}${time}</span>
         </div>`
-        : `<div class="text-xs text-gray-400 font-medium w-full text-center md:text-right">ยังไม่มีเวลา Check-In</div>`;
+        : `<div class="text-xs text-gray-400 font-medium w-full text-center md:text-right">${isCheckedIn ? 'ไม่พบเวลา Check-In' : 'ยังไม่มีการ Check-In'}</div>`;
 
 
     const card = document.createElement('div');
@@ -488,7 +541,7 @@ function displayLiveFeed(records, headerText){
     
     card.innerHTML = `
       <div class="flex-grow min-w-0">
-        <p class="text-xl font-bold ${isGuest ? 'text-red-700' : 'text-indigo-700'} truncate">${fullName}</p>
+        <p class="text-xl font-bold ${nameTextColor} truncate">${fullName}</p>
         
         <p class="text-sm text-gray-500 font-medium mt-0">${r.position||'N/A'}</p>
         
@@ -514,11 +567,18 @@ function displayLiveFeed(records, headerText){
             ${statusIcon}
         </span>
         ${timestampHTML}
+        ${isCheckedIn ? `
         <button class="mt-2 px-3 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 print-button">
           Print Label 70×50 mm
-        </button>
+        </button>` : ''}
       </div>`;
-    card.querySelector('button').addEventListener('click', ()=>printLabel(r));
+    
+    // เพิ่ม Listener เฉพาะเมื่อมีปุ่ม Print
+    const printButton = card.querySelector('button');
+    if (printButton) {
+        printButton.addEventListener('click', ()=>printLabel(r));
+    }
+    
     RESULTS_CONTAINER.appendChild(card);
   });
 }
