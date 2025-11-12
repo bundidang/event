@@ -118,23 +118,22 @@
           <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-700 mb-2">
             Monitor Registration (Realtime)
           </h1>
-          <p class="text-gray-500 mb-6">แสดงรายการผู้ที่ Check-In ล่าสุดและสรุปจำนวนรวม</p>
+          <p class="text-gray-500 mb-6">แสดงรายการผู้ที่ Check-in ล่าสุดและสรุปจำนวนรวม</p>
         </div>
     </header>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       
-        <button id="total-checked-in-btn" class="count-button bg-green-50 p-4 rounded-lg flex flex-col items-center shadow-md active green" onclick="filterRecords('All Checked-In')">
+        <button id="total-checked-in-btn" class="count-button bg-green-50 p-4 rounded-lg flex flex-col items-center shadow-md active green" onclick="filterRecords('All Checked-in')">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <div class="text-center">
-            <div class="text-sm font-medium text-green-600">Total Checked-In</div>
-            <div id="checked-in-count" class="text-3xl font-bold text-green-800 animate-pulse">0</div>
+            <div class="text-sm font-medium text-green-600">Total Checked-in</div><div id="checked-in-count" class="text-3xl font-bold text-green-800 animate-pulse">0</div>
           </div>
         </button>
 
-        <button id="invited-btn" class="count-button bg-indigo-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Invited Check-In')">
+        <button id="invited-btn" class="count-button bg-indigo-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Invited Check-in')">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
@@ -142,8 +141,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
           <div class="text-center">
-            <div class="text-sm font-medium text-indigo-600">Invited Check-In</div>
-            <div id="invited-count" class="text-3xl font-bold text-indigo-800 animate-pulse">0</div>
+            <div class="text-sm font-medium text-indigo-600">Invited Check-in</div><div id="invited-count" class="text-3xl font-bold text-indigo-800 animate-pulse">0</div>
           </div>
         </button>
         
@@ -153,24 +151,21 @@
             <circle cx="12" cy="7" r="4"/>
           </svg>
           <div class="text-center">
-            <div class="text-sm font-medium text-red-600">Guest</div>
-            <div id="guest-count" class="text-3xl font-bold text-red-800 animate-pulse">0</div>
+            <div class="text-sm font-medium text-red-600">Walk-in, Guest</div><div id="guest-count" class="text-3xl font-bold text-red-800 animate-pulse">0</div>
           </div>
         </button>
       
-        <button id="all-invited-btn" class="count-button bg-orange-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Attendee List (Waiting for Check-In)')">
+        <button id="all-invited-btn" class="count-button bg-orange-50 p-4 rounded-lg flex flex-col items-center shadow-md" onclick="filterRecords('Attendee List (Waiting for Check-in)')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h2m-2 4h2m-6-4h.01M6 18h.01"/>
             </svg>
             <div class="text-center">
-                <div class="text-sm font-medium text-orange-600">Attendee List (Waiting for Check-In)</div>
-                <div id="all-invited-count" class="text-3xl font-bold text-orange-800 animate-pulse">0</div>
+                <div class="text-sm font-medium text-orange-600">Attendee List (Waiting for Check-in)</div><div id="all-invited-count" class="text-3xl font-bold text-orange-800 animate-pulse">0</div>
             </div>
         </button>
     </div>
     <div class="bg-white p-6 rounded-xl shadow-lg">
-      <h2 id="results-header" class="text-xl font-semibold text-gray-700 mb-4">รายการ Total Checked-In ล่าสุด (0 รายการ)</h2> 
-      <div id="results-container" class="space-y-4">
+      <h2 id="results-header" class="text-xl font-semibold text-gray-700 mb-4">รายการ Total Checked-in ล่าสุด (0 รายการ)</h2> <div id="results-container" class="space-y-4">
         <p id="initial-message" class="text-center text-gray-500 p-8">กำลังโหลดข้อมูล...</p>
       </div>
       <p class="mt-4 text-center text-sm text-gray-500">อัปเดตอัตโนมัติทุก 30 วินาที</p>
@@ -201,7 +196,7 @@ const INITIAL_MESSAGE = document.getElementById('initial-message');
 
 let allRecords = [];
 // ตั้งค่า Default Filter เป็นกล่องสีเขียว
-let currentFilter = 'All Checked-In'; 
+let currentFilter = 'All Checked-in'; // [EDIT: Check-In -> Check-in] 
 
 /* ---------- Toast and Helpers (No Change) ---------- */
 function showToast(message, type='error') {
@@ -378,20 +373,20 @@ function printLabel(rec){
 /* ---------- Render & Filter (ปรับปรุงการแสดงผล) ---------- */
 function updateCounts(){
     
-    // 1. Attendee List (Waiting for Check-In): นับผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-In และไม่ใช่ Guest
+    // 1. Attendee List (Waiting for Check-in): นับผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-in และไม่ใช่ Guest
     const allInvitedCount = allRecords.filter(r => 
         (r.name || r.surname || r.position || r.company || r.phone || r.qr) && // มีข้อมูลในคอลัมน์ c-h
-        r.status !== 'Check In' && 
+        r.status !== 'Check In' && // [Logic remains 'Check In' to match data format, but UI labels change]
         r.status !== 'Guest'
     ).length;
     
-    // 2. Invited Check-In (Status = 'Check In')
+    // 2. Invited Check-in (Status = 'Check In')
     const invitedCheckInCount = allRecords.filter(r => r.status === 'Check In').length;
     
     // 3. Guest (Status = 'Guest')
     const guestCount = allRecords.filter(r => r.status === 'Guest').length;
     
-    // 4. Total Checked-In: นับรวม Invited Check-In + Guest
+    // 4. Total Checked-in: นับรวม Invited Check-in + Guest
     const totalCheckedIn = invitedCheckInCount + guestCount;
 
     ALL_INVITED_COUNT_EL.textContent = allInvitedCount; 
@@ -414,26 +409,26 @@ function filterRecords(type, refreshButtons = true){
     let headerText = 'รายการล่าสุด';
 
     // ลำดับการกรองใหม่
-    if (type === 'All Checked-In') {
+    if (type === 'All Checked-in') { // [EDIT: Check-In -> Check-in]
         // กรองทั้งหมด (Status = 'Check In' หรือ 'Guest')
         filteredRecords = allRecords.filter(r => r.status === 'Check In' || r.status === 'Guest');
-        headerText = `รายการ Total Checked-In ล่าสุด`;
-    } else if (type === 'Invited Check-In') {
+        headerText = `รายการ Total Checked-in ล่าสุด`; // [EDIT: Checked-In -> Checked-in]
+    } else if (type === 'Invited Check-in') { // [EDIT: Check-In -> Check-in]
         // กรองเฉพาะ Invited (Status = 'Check In')
         filteredRecords = allRecords.filter(r => r.status === 'Check In');
-        headerText = `รายการ Invited Check-In ล่าสุด`;
+        headerText = `รายการ Invited Check-in ล่าสุด`; // [EDIT: Check-In -> Check-in]
     } else if (type === 'Guest') {
         // กรองเฉพาะ Guest (Status = 'Guest')
         filteredRecords = allRecords.filter(r => r.status === 'Guest');
-        headerText = `รายการ Guest ล่าสุด`;
-    } else if (type === 'Attendee List (Waiting for Check-In)') {
-        // กรองผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-In และไม่ใช่ Guest
+        headerText = `รายการ Walk-in, Guest ล่าสุด`; // [EDIT: Guest -> Walk-in, Guest]
+    } else if (type === 'Attendee List (Waiting for Check-in)') { // [EDIT: Check-In -> Check-in]
+        // กรองผู้ที่ถูกเชิญ (มีข้อมูลใน c-h) แต่ยังไม่ได้ Check-in และไม่ใช่ Guest
         filteredRecords = allRecords.filter(r => 
             (r.name || r.surname || r.position || r.company || r.phone || r.qr) && 
             r.status !== 'Check In' &&
             r.status !== 'Guest'
         );
-        headerText = `รายการ Attendee List (Waiting for Check-In) ล่าสุด`;
+        headerText = `รายการ Attendee List (Waiting for Check-in) ล่าสุด`; // [EDIT: Check-In -> Check-in]
     }
 
     // เรียงตามลำดับการบันทึกข้อมูล
@@ -448,10 +443,10 @@ function filterRecords(type, refreshButtons = true){
         GUEST_BTN.classList.remove('active','red');
         TOTAL_CHECKED_IN_BTN.classList.remove('active','green');
         
-        if(type === 'Attendee List (Waiting for Check-In)') ALL_INVITED_BTN.classList.add('active', 'orange');
-        else if(type === 'Invited Check-In') INVITED_BTN.classList.add('active');
+        if(type === 'Attendee List (Waiting for Check-in)') ALL_INVITED_BTN.classList.add('active', 'orange'); // [EDIT: Check-In -> Check-in]
+        else if(type === 'Invited Check-in') INVITED_BTN.classList.add('active'); // [EDIT: Check-In -> Check-in]
         else if(type === 'Guest') GUEST_BTN.classList.add('active','red');
-        else if(type === 'All Checked-In') TOTAL_CHECKED_IN_BTN.classList.add('active','green');
+        else if(type === 'All Checked-in') TOTAL_CHECKED_IN_BTN.classList.add('active','green'); // [EDIT: Checked-In -> Checked-in]
     }
 }
 
@@ -473,7 +468,7 @@ function displayLiveFeed(records, headerText){
     const isGuest = r.status === 'Guest';
     const isCheckedIn = r.status === 'Check In' || r.status === 'Guest';
     
-    // ตรวจสอบสถานะ Waiting for Check-In
+    // ตรวจสอบสถานะ Waiting for Check-in
     const isWaitingCheckIn = 
         (r.name || r.surname || r.position || r.company || r.phone || r.qr) && 
         r.status !== 'Check In' && 
@@ -489,30 +484,30 @@ function displayLiveFeed(records, headerText){
 
 
     if (isWaitingCheckIn) {
-        borderClass = 'border-orange-200 hover:bg-orange-50'; // โทนสีส้มสำหรับ Waiting Check-In
+        borderClass = 'border-orange-200 hover:bg-orange-50'; // โทนสีส้มสำหรับ Waiting Check-in
         statusBg = 'bg-orange-100 text-orange-700'; 
         // 🚩 ไอคอนสถานะใหม่: Document List (Outline)
         statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m-7-4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1h-4a1 1 0 00-1 1v4zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg> Waiting for Check-In`;
+            </svg> Waiting for Check-in`; // [EDIT: Check-In -> Check-in]
     } else if (r.status === 'Check In') {
-        borderClass = 'border-indigo-200 hover:bg-indigo-50'; // โทนสีฟ้า/น้ำเงินสำหรับ Invited Check-In
+        borderClass = 'border-indigo-200 hover:bg-indigo-50'; // โทนสีฟ้า/น้ำเงินสำหรับ Invited Check-in
         statusBg = 'bg-indigo-100 text-indigo-700';
         statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
                <path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 00-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 010 7.75"/>
-           </svg> Invited Check-In`;
+           </svg> Invited Check-in`; // [EDIT: Check-In -> Check-in]
     } else if (isGuest) {
         borderClass = 'border-red-200 hover:bg-red-50'; // โทนสีแดง/ชมพูสำหรับ Guest
         statusBg = 'bg-red-100 text-red-700'; 
         statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7v1h14v-1a7 7 0 00-7-7z"/>
-           </svg> Guest`;
+           </svg> Walk-in, Guest`; // [EDIT: Guest -> Walk-in, Guest]
     }
     
-    // โทนสีเขียวสำหรับ Total Checked-In
+    // โทนสีเขียวสำหรับ Total Checked-in
     let nameTextColor = isWaitingCheckIn ? 'text-orange-700' : isGuest ? 'text-red-700' : 'text-indigo-700';
-    if (currentFilter === 'All Checked-In' && isCheckedIn) {
+    if (currentFilter === 'All Checked-in' && isCheckedIn) { // [EDIT: Checked-In -> Checked-in]
         nameTextColor = 'text-green-700';
     }
 
@@ -525,7 +520,7 @@ function displayLiveFeed(records, headerText){
     const calendarIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
     const clockIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
 
-    // เพิ่มการเช็คเงื่อนไขและแสดงข้อความถ้าไม่มีเวลา Check-In
+    // เพิ่มการเช็คเงื่อนไขและแสดงข้อความถ้าไม่มีเวลา Check-in
     const timestampHTML = (date && time && isCheckedIn) 
         ? `
         <div class="datetime-group">
@@ -533,7 +528,7 @@ function displayLiveFeed(records, headerText){
             <span class="separator">|</span>
             <span class="inline-flex items-center">${clockIcon}${time}</span>
         </div>`
-        : `<div class="text-xs text-gray-400 font-medium w-full text-center md:text-right">${isCheckedIn ? 'ไม่พบเวลา Check-In' : 'ยังไม่มีการ Check-In'}</div>`;
+        : `<div class="text-xs text-gray-400 font-medium w-full text-center md:text-right">${isCheckedIn ? 'ไม่พบเวลา Check-in' : 'ยังไม่มีการ Check-in'}</div>`; // [EDIT: Check-In -> Check-in]
 
 
     const card = document.createElement('div');
