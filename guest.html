@@ -14,7 +14,7 @@
     body{font-family:'Prompt','Tahoma','Arial',sans-serif;background:#f0f2f5;display:flex;flex-direction:column;align-items:center;padding:20px;color:#333}
     .container{width:100%;max-width:550px;margin:0 auto} 
     .header{text-align:center;margin-bottom:30px}
-    .header h1{color:#1a1a1a;font-size:32px;margin-bottom:5px;font-weight:700;} /* Changed from Event Registration to Registration */
+    .header h1{color:#1a1a1a;font-size:32px;margin-bottom:5px;font-weight:700;}
     
     /* Registration Box Styling */
     .register-box{background:#fff;padding:40px;border-radius:16px;box-shadow:0 8px 25px rgba(0,0,0,.15);margin-bottom:40px;}
@@ -22,7 +22,6 @@
     /* Input Field Styling */
     .form-group{margin-bottom:20px;text-align:left;}
     .form-group label{display:block;color:#ff7f00;font-weight:bold;margin-bottom:5px;font-size:15px;} 
-    /* NOTE: รวม Input และ Select Style */
     .form-group input, .form-group select {
       width:100%;
       padding:12px 15px;
@@ -40,25 +39,23 @@
       outline:none;
     }
     
-    /* PDPA Checkbox Styling (NEW) */
+    /* PDPA Checkbox Styling */
     .pdpa-group {
         margin-top: 10px;
         margin-bottom: 25px;
         display: flex;
-        align-items: flex-start; /* Aligns content to the start */
+        align-items: flex-start;
     }
-
     .pdpa-group input[type="checkbox"] {
         width: 20px; 
         height: 20px;
         margin-right: 10px;
-        flex-shrink: 0; /* Prevents checkbox from shrinking */
-        margin-top: 2px; /* Slight adjustment to align with text */
+        flex-shrink: 0;
+        margin-top: 2px;
     }
-
     .pdpa-group label {
         display: inline;
-        font-weight: normal; /* Less emphasis than field labels */
+        font-weight: normal;
         color: #555;
         font-size: 14px;
         margin-bottom: 0;
@@ -77,13 +74,12 @@
       transition:background-color .3s, transform .1s;
       background:#ff7f00;
       width:100%;
-      /* margin-top:20px; Removed, as the PDPA group is now before it */
     }
     .btn-submit:hover{background:#cc6600}
     .btn-submit:active{transform:scale(0.99);}
 
-    /* Status Message Styling (Loading/Success/Error) */
-    #status-message{margin-top:20px;padding:15px;border-radius:8px;font-size:15px;font-weight:600;text-align:center;color:#6b7280;background:#fefefe;border:1px solid #eee;}
+    /* Status Message Styling */
+    #status-message{margin-top:20px;padding:15px;border-radius:8px;font-size:15px;font-weight:600;text-align:center;color:#6b7280;background:#fefefe;border:1px solid #eee; line-height: 1.6;}
     .spinner{border:4px solid #f3f3f3;border-top:4px solid #ff7f00;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
     .loading-text{color:#ff7f00}
@@ -148,7 +144,6 @@
   </div>
 
   <script>
-    // **Please replace this URL with your deployed Google Apps Script URL**
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOXKcZBj1CZDLdemL4-XsxA9wCNql3FAtV1zvxW_WIOLOl5k4nLkNrqDfDPys5-hn0/exec"; 
 
     const form = document.getElementById('registrationForm');
@@ -157,47 +152,48 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // HTML5 form validation will run first due to 'required' attributes.
       if (!form.checkValidity()) {
         return; 
       }
 
-      // Show loading status
+      // แสดงสถานะกำลังโหลด
       statusMessage.innerHTML = '<span class="spinner"></span><span class="loading-text">Submitting registration data...</span>';
       
       const formData = new FormData(form);
       formData.append('action', 'register'); 
       
-      // *** โค้ดที่แก้ไข: เพิ่ม ' นำหน้าเบอร์มือถือ เพื่อให้ Google Sheet ตีความเป็นข้อความล้วน ***
       const mobileNumber = formData.get('Moblie');
       if (mobileNumber) {
-          // ใช้ .set() เพื่อแทนที่ค่าเดิมด้วยค่าใหม่ที่มี ' นำหน้า
-          // Moblie คือชื่อ (name) ของ input field ใน HTML
           formData.set('Moblie', "'" + mobileNumber);
       }
-      // ******************************************************************************
 
-      // Send data to Google Apps Script
       fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         body: formData
       })
       .then(r => r.json())
       .then(data => {
-        statusMessage.textContent = ''; 
-        
         if (data.status === 'success') {
-          alert(`Registration Successful!\nThank you ${formData.get('Name')} ${formData.get('Surname')} for registering.`);
+          // ส่วนที่แก้ไข: แสดงข้อความสำเร็จพร้อมคำแนะนำเรื่อง QR Code
+          statusMessage.innerHTML = `
+            <div style="color:#4CAF50; font-size: 16px;">
+              ✅ <strong>Registration Successful!</strong><br>
+              Thank you ${formData.get('Name')} ${formData.get('Surname')} for registering.<br>
+              <span style="color:#333; font-weight: normal;">Please wait for your QR Code to confirm your attendance.</span>
+            </div>`;
+          
+          // แจ้งเตือนผ่าน Alert ด้วย (ถ้าต้องการคงไว้)
+          alert(`Registration Successful!\nPlease wait for your QR Code to confirm your attendance.`);
+          
           form.reset(); 
-          statusMessage.innerHTML = '<span style="color:#4CAF50;">✅ Registration successful! Thank you for registering.</span>';
         } else {
           alert(`Registration Failed: ${data.message || 'Unknown error occurred'}`);
           statusMessage.innerHTML = `<span style="color:#d9534f;">❌ Registration Failed: ${data.message || 'Please try again'}</span>`;
         }
       })
       .catch(err => {
-        alert('Connection error occurred (Please check the URL and Network)');
-        console.error('Registration Fetch Error:', err);
+        alert('Connection error occurred');
+        console.error('Registration Error:', err);
         statusMessage.innerHTML = '<span style="color:#d9534f;">❌ Connection Error. Please check your network.</span>';
       });
     });
