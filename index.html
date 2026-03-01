@@ -23,13 +23,12 @@
     .btn-search,.btn-scan{color:#fff;padding:15px 25px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;transition:background-color .3s;flex-grow:1}
     .btn-search{background:#ff7f00}.btn-search:hover{background:#cc6600}
     .btn-scan{background:#4CAF50}.btn-scan:hover{background:#45a049}
-    .search-info{color:#999;font-size:14px;margin-top:10px}
-    #results-container{max-height:unset;overflow-y:visible;padding:0;border:none;margin-top:20px;display:none}
+    #results-container{margin-top:20px;display:none}
     .result-box{background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,.08);text-align:left;margin-bottom:15px}
     .result-title{display:flex;align-items:center;font-size:20px;font-weight:bold;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:10px;margin-bottom:20px}
     .result-title span{background:#ff7f00;color:#fff;border-radius:50%;width:25px;height:25px;display:flex;justify-content:center;align-items:center;font-size:16px;margin-right:10px}
     .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px;align-items:flex-start}
-    .data-label{width:180px;color:#555;flex-shrink:0}
+    .data-label{width:150px;color:#555;flex-shrink:0}
     .data-value{font-weight:bold;color:#333;flex-grow:1;word-break: break-word}
     .status-checked-in{color:#4CAF50;font-weight:bold}
     .status-pending{color:#ff7f00;font-weight:bold}
@@ -37,12 +36,26 @@
     .spinner{border:4px solid #f3f3f3;border-top:4px solid #ff7f00;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
     #qr-reader-container{width:100%;max-width:450px;display:none;margin:20px auto;padding:10px;border:1px solid #e0e0e0;border-radius:8px}
-    .camera-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .camera-select{flex:1}
+
+    /* Custom Modal สำหรับการแสดงผลตัวหนา */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal-content {
+      background: white; padding: 25px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center;
+    }
+    .modal-content h3 { margin-top: 0; color: #333; }
+    .modal-info { margin: 20px 0; line-height: 1.6; font-size: 17px; }
+    .modal-info strong { color: #000; font-weight: 700; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
+    .btn-ok { background: #007bff; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-cancel { background: #6c757d; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; }
+
     @media (max-width: 600px) {
-        .data-row {flex-direction: column;align-items: stretch}
-        .data-label {width: auto;margin-bottom: 2px}
-        .data-value {padding-left: 15px;font-size: 16px}
+      .data-row {flex-direction: column;align-items: stretch}
+      .data-label {width: auto;margin-bottom: 2px}
+      .data-value {padding-left: 15px;font-size: 16px}
     }
   </style>
 
@@ -80,14 +93,22 @@
       </form>
       <div id="status-message"></div>
       <div id="qr-reader-container">
-        <div class="camera-toolbar">
-          <select id="cameraSelect" class="camera-select"></select>
-          <button type="button" id="btn-reload-cams">รีเฟรชกล้อง</button>
-        </div>
         <div id="qr-reader" style="width:100%"></div>
       </div>
     </div>
     <div id="results-container"></div>
+  </div>
+
+  <div id="checkinModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>พบข้อมูล</h3>
+      <div id="modalInfo" class="modal-info"></div>
+      <p>ต้องการ Check-In ใช่หรือไม่?</p>
+      <div class="modal-btns">
+        <button id="modalCancel" class="btn-cancel">Cancel</button>
+        <button id="modalOk" class="btn-ok">OK</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -99,20 +120,51 @@
       const statusMessage = document.getElementById('status-message');
       const btnScan = document.getElementById('btn-scan-qr');
       const qrReaderContainer = document.getElementById('qr-reader-container');
+      
+      const modal = document.getElementById('checkinModal');
+      const modalInfo = document.getElementById('modalInfo');
+      const modalOk = document.getElementById('modalOk');
+      const modalCancel = document.getElementById('modalCancel');
 
       let html5QrCode = null;
       let isScanning = false;
+      let currentPendingItem = null;
 
       function checkInSilently(memberCode, companyName){
         const formData = new FormData();
         formData.append('action', 'checkin');
         formData.append('code', memberCode);
         formData.append('company', companyName || '');
-        
-        fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
-          .then(r => r.json())
-          .catch(err => console.error('Background Check-In Error:', err));
+        fetch(APPS_SCRIPT_URL, { method:'POST', body:formData }).catch(err => console.error(err));
       }
+
+      function showCheckinModal(item) {
+        currentPendingItem = item;
+        const name = `${item.name||''} ${item.surname||''}`.trim();
+        const pos = item.position || '';
+        const comp = item.company || '';
+        
+        // ใส่ Tag <strong> เพื่อให้ ชื่อ-นามสกุล และ บริษัท เป็นตัวหนา
+        modalInfo.innerHTML = `
+          <strong>${name}</strong><br>
+          ${pos ? pos + '<br>' : ''}
+          <strong>${comp}</strong>
+        `;
+        modal.style.display = 'flex';
+      }
+
+      modalOk.onclick = () => {
+        if(currentPendingItem) {
+          checkInSilently(currentPendingItem.code, currentPendingItem.company);
+          modal.style.display = 'none';
+          resultsContainer.innerHTML = '';
+          resultsContainer.style.display = 'none';
+          queryInput.value = '';
+          btnScan.click();
+        }
+      };
+
+      modalCancel.onclick = () => { modal.style.display = 'none'; };
 
       function renderResults(items){
         resultsContainer.style.display = 'block';
@@ -124,7 +176,6 @@
           const isChecked = statusText.toLowerCase().includes('check in');
           const statusClass = isChecked ? 'status-checked-in' : 'status-pending';
           const fullName = `${item.name||''} ${item.surname||''}`.trim();
-          const position = item.position || 'ไม่ระบุ';
 
           const box = document.createElement('div');
           box.className = 'result-box';
@@ -133,29 +184,15 @@
             <div class="data-list">
               <div class="data-row"><div class="data-label">สถานะ:</div><div class="data-value ${statusClass}">${statusText}</div></div>
               <div class="data-row"><div class="data-label">ชื่อ-นามสกุล:</div><div class="data-value">${fullName}</div></div>
-              <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${position}</div></div>
-              <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company||'ไม่ระบุ'}</div></div>
+              <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position||'-'}</div></div>
+              <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company||'-'}</div></div>
               <div class="data-row"><div class="data-label">Code:</div><div class="data-value">${item.code||'-'}</div></div>
             </div>`;
           resultsContainer.appendChild(box);
-          
           if (idx === 0 && !isChecked) firstUncheckedItem = item;
         });
         
-        if(firstUncheckedItem){ 
-          const name = `${firstUncheckedItem.name||''} ${firstUncheckedItem.surname||''}`.trim();
-          const comp = firstUncheckedItem.company || '';
-          const pos = firstUncheckedItem.position || '';
-          
-          // แก้ไข Popup ให้แสดงตำแหน่งงาน (Position)
-          if(confirm(`พบข้อมูล\n${name}\n${pos}\n${comp}\n\nต้องการ Check-In ใช่หรือไม่?`)){
-            checkInSilently(firstUncheckedItem.code, comp);
-            resultsContainer.innerHTML = '';
-            resultsContainer.style.display = 'none';
-            queryInput.value = '';
-            btnScan.click(); 
-          }
-        }
+        if(firstUncheckedItem) showCheckinModal(firstUncheckedItem);
       }
 
       function performSearch(queryValue){
@@ -193,7 +230,7 @@
             performSearch(text);
           });
           isScanning = true;
-        } catch(e) { alert('ไม่สามารถเปิดกล้องได้: ' + e); }
+        } catch(e) { alert('ไม่สามารถเปิดกล้องได้'); }
       });
 
       async function stopScanner(){
