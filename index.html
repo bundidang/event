@@ -23,43 +23,31 @@
     .btn-search,.btn-scan{color:#fff;padding:15px 25px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;transition:background-color .3s;flex-grow:1}
     .btn-search{background:#ff7f00}.btn-search:hover{background:#cc6600}
     .btn-scan{background:#4CAF50}.btn-scan:hover{background:#45a049}
-    .search-info{color:#999;font-size:14px;margin-top:10px}
-    #results-container{max-height:unset;overflow-y:visible;padding:0;border:none;margin-top:20px;display:none}
+    #results-container{display:none;margin-top:20px}
     .result-box{background:#fff;padding:20px 30px;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,.08);text-align:left;margin-bottom:15px}
     .result-title{display:flex;align-items:center;font-size:20px;font-weight:bold;color:#1a1a1a;border-bottom:2px solid #e0e0e0;padding-bottom:10px;margin-bottom:20px}
     .result-title span{background:#ff7f00;color:#fff;border-radius:50%;width:25px;height:25px;display:flex;justify-content:center;align-items:center;font-size:16px;margin-right:10px}
-    .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px;align-items:flex-start}
+    .data-row{display:flex;padding:8px 0;border-bottom:1px dashed #e9ecef;font-size:15px}
     .data-label{width:180px;color:#555;flex-shrink:0}
-    .data-value{font-weight:bold;color:#333;flex-grow:1;word-break: break-word}
-    .data-value a[href^="tel:"]{color:#007bff;text-decoration:none;font-weight:bold;white-space:nowrap}
-    .status-checked-in{color:#4CAF50;font-weight:bold}
-    .status-pending{color:#ff7f00;font-weight:bold}
+    .data-value{font-weight:bold;color:#333;flex-grow:1}
+    .status-checked-in{color:#4CAF50}.status-pending{color:#ff7f00}
     #status-message{margin-top:20px;font-size:15px;font-weight:600;color:#6b7280}
     .spinner{border:4px solid #f3f3f3;border-top:4px solid #ff7f00;border-radius:50%;width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
     @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-    #qr-reader-container{width:100%;max-width:450px;display:none;margin:20px auto;padding:10px;border:1px solid #e0e0e0;border-radius:8px}
-    .camera-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .camera-select{flex:1}
+    #qr-reader-container{width:100%;max-width:450px;display:none;margin:20px auto;border:1px solid #e0e0e0;border-radius:8px;padding:10px}
     @media (max-width: 600px) {
-        .data-row {flex-direction: column;align-items: stretch}
-        .data-label {width: auto;margin-bottom: 2px}
-        .data-value {padding-left: 15px;font-size: 16px}
+        .data-row {flex-direction: column;}
+        .data-label {width: auto; margin-bottom: 2px;}
     }
   </style>
 
   <script>
-    (function loadHtml5QrcodeWithFallback(){
-      const cdns = ["https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js","https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"];
-      let i = 0;
-      function tryNext(){
-        if(i >= cdns.length) return;
-        const s = document.createElement("script");
-        s.src = cdns[i++];
-        s.onload = () => { if(window.Html5Qrcode) init(); else tryNext(); };
-        s.onerror = tryNext;
-        document.head.appendChild(s);
-      }
-      tryNext();
+    // Load Library Check
+    (function loadHtml5Qrcode(){
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+      script.onload = () => init();
+      document.head.appendChild(script);
     })();
   </script>
 </head>
@@ -71,7 +59,7 @@
         <div class="search-inputs">
           <div class="input-group">
             <label for="query">ค้นหา:</label>
-            <input type="text" id="query" name="query" placeholder="ชื่อ, นามสกุล, บริษัท, เบอร์มือถือ, email, code" required>
+            <input type="text" id="query" name="query" placeholder="ชื่อ, นามสกุล, บริษัท..." required>
           </div>
           <div class="action-buttons">
             <button type="button" class="btn-scan" id="btn-scan-qr">สแกน QR</button>
@@ -81,10 +69,6 @@
       </form>
       <div id="status-message"></div>
       <div id="qr-reader-container">
-        <div class="camera-toolbar">
-          <select id="cameraSelect" class="camera-select"></select>
-          <button type="button" id="btn-reload-cams">รีเฟรชกล้อง</button>
-        </div>
         <div id="qr-reader" style="width:100%"></div>
       </div>
     </div>
@@ -100,12 +84,11 @@
       const statusMessage = document.getElementById('status-message');
       const btnScan = document.getElementById('btn-scan-qr');
       const qrReaderContainer = document.getElementById('qr-reader-container');
-      const cameraSelect = document.getElementById('cameraSelect');
 
       let html5QrCode = null;
       let isScanning = false;
 
-      // === เช็คอินเบื้องหลัง (ไม่มี Spinner ขวางหน้าจอ) ===
+      // === บันทึกเช็คอินเบื้องหลัง ===
       function checkInSilently(memberCode, companyName){
         const formData = new FormData();
         formData.append('action', 'checkin');
@@ -114,7 +97,8 @@
         
         fetch(APPS_SCRIPT_URL, { method:'POST', body:formData })
           .then(r => r.json())
-          .catch(err => console.error('Background Check-In Error:', err));
+          .then(data => { if(data.status !== 'success') alert('บันทึกล้มเหลว: ' + data.message); })
+          .catch(err => console.error('Check-In Error:', err));
       }
 
       function renderResults(items){
@@ -125,7 +109,6 @@
         items.forEach((item, idx)=>{
           const statusText = item.status || 'Pending';
           const isChecked = statusText.toLowerCase().includes('check in');
-          const statusClass = isChecked ? 'status-checked-in' : 'status-pending';
           const fullName = `${item.name||''} ${item.surname||''}`.trim();
 
           const box = document.createElement('div');
@@ -133,37 +116,38 @@
           box.innerHTML = `
             <div class="result-title"><span>${idx+1}</span> ข้อมูลสมาชิก</div>
             <div class="data-list">
-              <div class="data-row"><div class="data-label">สถานะ:</div><div class="data-value ${statusClass}">${statusText}</div></div>
+              <div class="data-row"><div class="data-label">สถานะ:</div><div class="data-value ${isChecked?'status-checked-in':'status-pending'}">${statusText}</div></div>
               <div class="data-row"><div class="data-label">ชื่อ-นามสกุล:</div><div class="data-value">${fullName}</div></div>
+              <div class="data-row"><div class="data-label">ตำแหน่ง:</div><div class="data-value">${item.position||'ไม่ระบุ'}</div></div>
               <div class="data-row"><div class="data-label">บริษัท:</div><div class="data-value">${item.company||'ไม่ระบุ'}</div></div>
-              <div class="data-row"><div class="data-label">Code:</div><div class="data-value">${item.code||'-'}</div></div>
             </div>`;
           resultsContainer.appendChild(box);
           
           if (idx === 0 && !isChecked) firstUncheckedItem = item;
         });
         
+        // Popup พร้อมแสดงตำแหน่ง (Position)
         if(firstUncheckedItem){ 
           const name = `${firstUncheckedItem.name||''} ${firstUncheckedItem.surname||''}`.trim();
+          const pos = firstUncheckedItem.position || 'ไม่ระบุตำแหน่ง';
           const comp = firstUncheckedItem.company || '';
           
-          if(confirm(`พบข้อมูล\n${name}\n${comp}\n\nต้องการ Check-In ใช่หรือไม่?`)){
-            // 1. บันทึกเบื้องหลังทันที
+          // ข้อความใน Popup (เพิ่มตำแหน่ง)
+          const confirmMsg = `พบข้อมูล\n${name}\n${pos}\n${comp}\n\nต้องการ Check-In ใช่หรือไม่?`;
+          
+          if(confirm(confirmMsg)){
             checkInSilently(firstUncheckedItem.code, comp);
-            
-            // 2. ล้างหน้าจอแสดงผลเดิมออก
+            // จบขั้นตอนทันที: ล้างค่าและเปิดกล้องต่อ
+            queryInput.value = '';
             resultsContainer.innerHTML = '';
             resultsContainer.style.display = 'none';
-            queryInput.value = '';
-            
-            // 3. เริ่มสแกนคนต่อไปทันที (กดปุ่มสแกนให้เอง)
             btnScan.click(); 
           }
         }
       }
 
       function performSearch(queryValue){
-        statusMessage.innerHTML = '<span class="spinner"></span> <span>กำลังค้นหา...</span>';
+        statusMessage.innerHTML = '<span class="spinner"></span> ค้นหา...';
         const formData = new FormData();
         formData.append('query', queryValue);
         formData.append('action', 'search');
@@ -180,30 +164,25 @@
 
       document.getElementById('searchForm').addEventListener('submit', (e)=>{
         e.preventDefault();
-        if(queryInput.value.trim()) performSearch(queryInput.value.trim());
+        performSearch(queryInput.value.trim());
       });
 
-      // === ระบบกล้อง (เหมือนเดิม) ===
       btnScan.addEventListener('click', async ()=>{
-        if (isScanning){ await stopScanner(); btnScan.textContent = 'สแกน QR'; return; }
+        if (isScanning){ await html5QrCode.stop(); isScanning = false; qrReaderContainer.style.display = 'none'; btnScan.textContent = 'สแกน QR'; return; }
         qrReaderContainer.style.display = 'block';
         btnScan.textContent = 'ยกเลิกสแกน';
-        try {
-          const cams = await Html5Qrcode.getCameras();
-          const backCam = cams.find(c=>/back|rear|environment/i.test(c.label)) || cams[0];
-          if(!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
-          await html5QrCode.start(backCam.id, { fps:10, qrbox:250 }, (text)=>{
-            stopScanner();
+        if(!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+          html5QrCode.stop().then(() => {
+            isScanning = false;
+            qrReaderContainer.style.display = 'none';
+            btnScan.textContent = 'สแกน QR';
             queryInput.value = text;
             performSearch(text);
           });
-          isScanning = true;
-        } catch(e) { alert('ไม่สามารถเปิดกล้องได้: ' + e); }
+        });
+        isScanning = true;
       });
-
-      async function stopScanner(){
-        if(html5QrCode && isScanning){ await html5QrCode.stop(); isScanning = false; qrReaderContainer.style.display = 'none'; }
-      }
     }
   </script>
 </body>
